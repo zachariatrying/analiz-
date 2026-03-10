@@ -331,22 +331,17 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     btn_baslat = st.button("TARAMAYI BASLAT", type="primary", use_container_width=True)
 
-# Init watchlist in session state
+# Init session state
 if 'watchlist' not in st.session_state:
     st.session_state.watchlist = []
+if 'scan_results' not in st.session_state:
+    st.session_state.scan_results = []
+if 'scan_params' not in st.session_state:
+    st.session_state.scan_params = {}
 
-# Sonuclar
+# Tarama
 if btn_baslat:
     temiz_hisseler = sorted(list(set([h.upper() for h in hisseler if len(h) > 1])))
-    st.markdown(f"""
-    <div class="glass-card" style="text-align:center; padding:16px;">
-        <span style="color:#818cf8; font-weight:600;">{len(temiz_hisseler)} hisse taraniyor</span>
-        <span style="color:#475569;"> | </span>
-        <span style="color:#94a3b8;">{z_etiket}</span>
-        <span style="color:#475569;"> | </span>
-        <span style="color:#94a3b8;">{', '.join(secilen_formasyonlar)}</span>
-    </div>
-    """, unsafe_allow_html=True)
 
     bar = st.progress(0)
     bulunanlar = []
@@ -360,82 +355,98 @@ if btn_baslat:
                 bulunanlar.append(sonuc)
     bar.empty()
 
-    if not bulunanlar:
-        if tek_hisse_aktif: st.error(f"{temiz_hisseler[0]} icin sonuc bulunamadi veya veri alinamadi.")
-        else: st.warning("Sonuc yok. Toleransi artirin veya daha fazla formasyon secin.")
-    else:
-        st.markdown(f"""
-        <div class="glass-card" style="text-align:center; padding:12px; border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.05);">
-            <span style="color:#4ade80; font-weight:700; font-size:1.1rem;">{len(bulunanlar)} Sonuc Bulundu</span>
-        </div>
-        """, unsafe_allow_html=True)
+    # Sonuclari session state e kaydet
+    st.session_state.scan_results = bulunanlar
+    st.session_state.scan_params = {
+        'bar_sayisi': bar_sayisi, 'yf_int': yf_int, 'yf_per': yf_per,
+        'yf_res': yf_res, 'z_etiket': z_etiket,
+    }
 
-        for idx_v, veri in enumerate(bulunanlar):
-            f_name = veri['Formasyon']
-            sinyal_renk = "[Bullish]" if veri.get('Sinyal') == 'Bullish' else "[Bearish]" if veri.get('Sinyal') == 'Bearish' else ""
-            baslik = f"{veri['Hisse']} | {f_name} {sinyal_renk} | Skor: {veri['Skor']} | Pot: %{veri['Potansiyel']:.1f}"
+# Sonuclari goster (session state den)
+bulunanlar = st.session_state.scan_results
+sp = st.session_state.scan_params
 
-            with st.expander(baslik, expanded=True):
-                df_c = veri_getir(veri['Hisse'], bar_sayisi, yf_int, yf_per, yf_res)
-                if df_c is not None:
-                    fig = grafik_ciz(df_c, veri['Hisse'], veri)
-                    st.plotly_chart(fig, use_container_width=True, key=f"chart_{veri['Hisse']}_{idx_v}")
-                c1, c2, c3, c4 = st.columns(4)
-                c1.metric("Fiyat", f"{veri['Fiyat']:.2f}")
-                c2.metric("Hedef", f"{veri['Hedef']:.2f}")
-                c3.metric("Stop", f"{veri.get('Stop', 0):.2f}")
-                c4.metric("Skor", f"{veri['Skor']}/100")
-                if veri.get('Strateji'): st.info(f"Strateji: {veri['Strateji']}")
-                meta_parts = []
-                if veri.get('Durum'): meta_parts.append(f"Durum: {veri['Durum']}")
-                if veri.get('Kalite'): meta_parts.append(f"Kalite: {veri['Kalite']}")
-                if veri.get('Vade'): meta_parts.append(f"Vade: {veri['Vade']}")
-                if meta_parts: st.caption(" | ".join(meta_parts))
-                if "Genel" in veri['Formasyon']: st.caption("Formasyon bulunamadi, genel gorunum sunuluyor.")
+if not bulunanlar:
+    if btn_baslat:
+        st.warning("Sonuc yok. Toleransi artirin veya daha fazla formasyon secin.")
+else:
+    st.markdown(f"""
+    <div class="glass-card" style="text-align:center; padding:12px; border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.05);">
+        <span style="color:#4ade80; font-weight:700; font-size:1.1rem;">{len(bulunanlar)} Sonuc Bulundu</span>
+    </div>
+    """, unsafe_allow_html=True)
 
-                # Alarma Ekle butonu
-                alarm_col1, alarm_col2 = st.columns([1, 3])
-                with alarm_col1:
-                    if st.button("ALARMA EKLE", key=f"alarm_{veri['Hisse']}_{idx_v}", use_container_width=True):
-                        new_alarm = {
-                            'hisse': veri['Hisse'],
-                            'tur': 'Fiyat Uzerine Ciktiginda',
-                            'hedef': veri['Hedef'],
-                        }
-                        st.session_state.watchlist.append(new_alarm)
-                        st.success(f"{veri['Hisse']} hedef fiyat alarmi eklendi: {veri['Hedef']:.2f} TL")
-                with alarm_col2:
-                    st.caption(f"Hedef {veri['Hedef']:.2f} TL uzerine alarm kurulur")
+    _bar = sp.get('bar_sayisi', 150)
+    _int = sp.get('yf_int', '1d')
+    _per = sp.get('yf_per', '2y')
+    _res = sp.get('yf_res', None)
 
-        # Toplu Alarma Ekle
-        st.divider()
-        col_bulk, col_info = st.columns([1, 2])
-        with col_bulk:
-            if st.button("TUM SONUCLARI ALARMA EKLE", type="primary", use_container_width=True):
-                added = 0
-                for v in bulunanlar:
-                    if "Genel" not in v['Formasyon']:
-                        st.session_state.watchlist.append({
-                            'hisse': v['Hisse'],
-                            'tur': 'Fiyat Uzerine Ciktiginda',
-                            'hedef': v['Hedef'],
-                        })
-                        added += 1
-                st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
-        with col_info:
-            st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")
+    for idx_v, veri in enumerate(bulunanlar):
+        f_name = veri['Formasyon']
+        sinyal_renk = "[Bullish]" if veri.get('Sinyal') == 'Bullish' else "[Bearish]" if veri.get('Sinyal') == 'Bearish' else ""
+        baslik = f"{veri['Hisse']} | {f_name} {sinyal_renk} | Skor: {veri['Skor']} | Pot: %{veri['Potansiyel']:.1f}"
 
-        st.divider()
-        st.markdown("### Ozet Tablo")
-        df_final = pd.DataFrame(bulunanlar)
-        all_cols = ['Hisse', 'Fiyat', 'Formasyon', 'Sinyal', 'Periyot', 'Potansiyel', 'Hedef', 'Stop', 'Skor', 'Durum', 'Kalite', 'Vade']
-        cols = [c for c in all_cols if c in df_final.columns]
-        st.dataframe(df_final[cols], use_container_width=True, column_config={
-            "Potansiyel": st.column_config.NumberColumn("Potansiyel %", format="%.1f%%"),
-            "Fiyat": st.column_config.NumberColumn("Fiyat", format="%.2f"),
-            "Hedef": st.column_config.NumberColumn("Hedef", format="%.2f"),
-            "Stop": st.column_config.NumberColumn("Stop", format="%.2f"),
-        })
-        csv = df_final[cols].to_csv(index=False).encode('utf-8-sig')
-        st.download_button(label="Sonuclari CSV olarak indir", data=csv, file_name="tarama_sonuclari.csv", mime="text/csv")
+        with st.expander(baslik, expanded=True):
+            df_c = veri_getir(veri['Hisse'], _bar, _int, _per, _res)
+            if df_c is not None:
+                fig = grafik_ciz(df_c, veri['Hisse'], veri)
+                st.plotly_chart(fig, use_container_width=True, key=f"chart_{veri['Hisse']}_{idx_v}")
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Fiyat", f"{veri['Fiyat']:.2f}")
+            c2.metric("Hedef", f"{veri['Hedef']:.2f}")
+            c3.metric("Stop", f"{veri.get('Stop', 0):.2f}")
+            c4.metric("Skor", f"{veri['Skor']}/100")
+            if veri.get('Strateji'): st.info(f"Strateji: {veri['Strateji']}")
+            meta_parts = []
+            if veri.get('Durum'): meta_parts.append(f"Durum: {veri['Durum']}")
+            if veri.get('Kalite'): meta_parts.append(f"Kalite: {veri['Kalite']}")
+            if veri.get('Vade'): meta_parts.append(f"Vade: {veri['Vade']}")
+            if meta_parts: st.caption(" | ".join(meta_parts))
+            if "Genel" in veri['Formasyon']: st.caption("Formasyon bulunamadi, genel gorunum sunuluyor.")
+
+            # Alarma Ekle butonu
+            alarm_col1, alarm_col2 = st.columns([1, 3])
+            with alarm_col1:
+                if st.button("ALARMA EKLE", key=f"alarm_{veri['Hisse']}_{idx_v}", use_container_width=True):
+                    new_alarm = {
+                        'hisse': veri['Hisse'],
+                        'tur': 'Fiyat Uzerine Ciktiginda',
+                        'hedef': veri['Hedef'],
+                    }
+                    st.session_state.watchlist.append(new_alarm)
+                    st.success(f"{veri['Hisse']} hedef fiyat alarmi eklendi: {veri['Hedef']:.2f} TL")
+            with alarm_col2:
+                st.caption(f"Hedef {veri['Hedef']:.2f} TL uzerine alarm kurulur")
+
+    # Toplu Alarma Ekle
+    st.divider()
+    col_bulk, col_info = st.columns([1, 2])
+    with col_bulk:
+        if st.button("TUM SONUCLARI ALARMA EKLE", type="primary", use_container_width=True):
+            added = 0
+            for v in bulunanlar:
+                if "Genel" not in v['Formasyon']:
+                    st.session_state.watchlist.append({
+                        'hisse': v['Hisse'],
+                        'tur': 'Fiyat Uzerine Ciktiginda',
+                        'hedef': v['Hedef'],
+                    })
+                    added += 1
+            st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
+    with col_info:
+        st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")
+
+    st.divider()
+    st.markdown("### Ozet Tablo")
+    df_final = pd.DataFrame(bulunanlar)
+    all_cols = ['Hisse', 'Fiyat', 'Formasyon', 'Sinyal', 'Periyot', 'Potansiyel', 'Hedef', 'Stop', 'Skor', 'Durum', 'Kalite', 'Vade']
+    cols = [c for c in all_cols if c in df_final.columns]
+    st.dataframe(df_final[cols], use_container_width=True, column_config={
+        "Potansiyel": st.column_config.NumberColumn("Potansiyel %", format="%.1f%%"),
+        "Fiyat": st.column_config.NumberColumn("Fiyat", format="%.2f"),
+        "Hedef": st.column_config.NumberColumn("Hedef", format="%.2f"),
+        "Stop": st.column_config.NumberColumn("Stop", format="%.2f"),
+    })
+    csv = df_final[cols].to_csv(index=False).encode('utf-8-sig')
+    st.download_button(label="Sonuclari CSV olarak indir", data=csv, file_name="tarama_sonuclari.csv", mime="text/csv")
 
