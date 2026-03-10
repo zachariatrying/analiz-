@@ -1,0 +1,208 @@
+"""
+Derinlik (AKD) Modulu
+@borsabilgibot uzerinden kullanici hesabiyla (UserBot) derinlik verisi cekme.
+"""
+import streamlit as st
+import asyncio
+import nest_asyncio
+import os
+import time
+
+nest_asyncio.apply()
+
+# Tema entegrasyonu
+import sys
+curr_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(curr_dir)
+if curr_dir not in sys.path: sys.path.append(curr_dir)
+if parent_dir not in sys.path: sys.path.append(parent_dir)
+try:
+    from src.theme import CSS_STYLE
+except ImportError:
+    from theme import CSS_STYLE
+
+from telethon import TelegramClient, events
+
+st.set_page_config(page_title="Derinlik & AKD", page_icon="", layout="wide")
+st.markdown(CSS_STYLE, unsafe_allow_html=True)
+
+SESSION_FILE = os.path.join(parent_dir, 'userbot.session')
+
+# Session states
+if 'api_id' not in st.session_state: st.session_state.api_id = ""
+if 'api_hash' not in st.session_state: st.session_state.api_hash = ""
+if 'phone' not in st.session_state: st.session_state.phone = ""
+if 'auth_msg' not in st.session_state: st.session_state.auth_msg = ""
+if 'is_authorized' not in st.session_state: st.session_state.is_authorized = False
+if 'awaiting_code' not in st.session_state: st.session_state.awaiting_code = False
+if 'client' not in st.session_state: st.session_state.client = None
+
+st.markdown("""
+<div style="text-align:center; padding:10px 0 24px 0;">
+    <h1 style="font-size:2.2rem; font-weight:800;
+        background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        margin-bottom:4px;">
+        Derinlik Analizi
+    </h1>
+    <p style="color:#64748b; font-size:0.95rem;">Telegram @borsabilgibot uzerinden gercek zamanli derinlik goruntusu</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Helper function
+def get_client(api_id, api_hash):
+    if st.session_state.client is None:
+        client = TelegramClient(SESSION_FILE, api_id, api_hash)
+        st.session_state.client = client
+    return st.session_state.client
+
+async def check_auth():
+    if not (st.session_state.api_id and st.session_state.api_hash):
+        return False
+    client = get_client(st.session_state.api_id, st.session_state.api_hash)
+    await client.connect()
+    return await client.is_user_authorized()
+
+async def send_code():
+    client = get_client(st.session_state.api_id, st.session_state.api_hash)
+    await client.connect()
+    try:
+        if not await client.is_user_authorized():
+            await client.send_code_request(st.session_state.phone)
+            st.session_state.awaiting_code = True
+            st.session_state.auth_msg = "Dogrulama kodu SMS veya Telegram'dan gonderildi."
+    except Exception as e:
+        st.session_state.auth_msg = f"Hata: {str(e)}"
+
+async def sign_in(code):
+    client = get_client(st.session_state.api_id, st.session_state.api_hash)
+    await client.connect()
+    try:
+        await client.sign_in(st.session_state.phone, code)
+        st.session_state.is_authorized = True
+        st.session_state.awaiting_code = False
+        st.session_state.auth_msg = "Giris basarili! Artik sorgu yapabilirsiniz."
+    except Exception as e:
+        st.session_state.auth_msg = f"Giris Hatasi: {str(e)}"
+
+async def get_derinlik(ticker):
+    client = get_client(st.session_state.api_id, st.session_state.api_hash)
+    await client.connect()
+    if not await client.is_user_authorized():
+        return {"error": "Lutfen once giris yapin."}
+
+    target_bot = "@borsabilgibot"
+    command = f"/derinlik {ticker.upper()}"
+    
+    # Send message
+    await client.send_message(target_bot, command)
+    
+    # Wait for response (timeout 15 sec)
+    response_msg = None
+    media_path = None
+    start_time = time.time()
+    
+    # Basic polling loops
+    while time.time() - start_time < 15:
+        # Get last 2 messages from bot
+        messages = await client.get_messages(target_bot, limit=2)
+        for msg in messages:
+            # Check if this message was sent by the bot recently
+            if not msg.out:
+                response_msg = msg.text
+                if msg.media:
+                    file_loc = os.path.join(parent_dir, f"tmp_derinlik_{ticker}.jpg")
+                    media_path = await client.download_media(msg, file=file_loc)
+                break
+                
+        if response_msg or media_path:
+            break
+            
+        await asyncio.sleep(1)
+        
+    if not response_msg and not media_path:
+        return {"error": "Bottan 15 saniye icinde yanit gelmedi veya sunucu yogun."}
+        
+    return {"text": response_msg, "media": media_path}
+
+# == UI Logics ==
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+
+# 1. Login State check
+if st.session_state.api_id and st.session_state.api_hash:
+    is_auth = loop.run_until_complete(check_auth())
+    st.session_state.is_authorized = is_auth
+
+if not st.session_state.is_authorized:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown("### 🔐 Telegram API Baglantisi")
+    st.caption("Verileri @borsabilgibot uzerinden cekebilmemiz icin kisisel Telegram API ID ve Hash bilgilerinize ihtiyacimiz var. Bu bilgiler sadece burada, kendi cihazinizda tutulur.")
+    st.markdown("API ID almak icin [my.telegram.org](https://my.telegram.org)'a girip 'API Development tools' bolumunden uygulama olusturun.")
+    
+    with st.form("auth_form"):
+        api_id = st.text_input("API ID", value=st.session_state.api_id)
+        api_hash = st.text_input("API HASH", value=st.session_state.api_hash)
+        phone = st.text_input("Telefon Numarasi", value=st.session_state.phone, placeholder="+905xxxxxxxxx")
+        submit_btn = st.form_submit_button("Dogrulama Kodu Gonder", type="primary")
+        
+        if submit_btn:
+            if api_id and api_hash and phone:
+                st.session_state.api_id = api_id
+                st.session_state.api_hash = api_hash
+                st.session_state.phone = phone
+                loop.run_until_complete(send_code())
+                st.rerun()
+            else:
+                st.error("Lutfen tum alanlari doldurun.")
+                
+    if st.session_state.auth_msg:
+        st.info(st.session_state.auth_msg)
+        
+    if st.session_state.awaiting_code:
+        st.divider()
+        with st.form("code_form"):
+            code = st.text_input("Telegramdan veya SMS'ten gelen 5 haneli kod")
+            code_btn = st.form_submit_button("Giris Yap", type="primary")
+            if code_btn and code:
+                loop.run_until_complete(sign_in(code))
+                st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+
+else:
+    # 2. Main Derinlik Interface
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown("### 📊 Derinlik Getir")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        ticker = st.text_input("Hisse Kodu Girin", placeholder="Orn: THYAO, SASA")
+    with col2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        search_btn = st.button("GETIR", type="primary", use_container_width=True)
+        
+    if search_btn and ticker:
+        with st.spinner(f"{ticker} derinlik tablosu Telegramdan cekiiliyor... Lutfen bekleyin (Maks 15sn)"):
+            result = loop.run_until_complete(get_derinlik(ticker))
+            
+            if "error" in result:
+                st.error(result["error"])
+            else:
+                st.success(f"{ticker} derinlik verisi basariyla alindi.")
+                if result.get("text"):
+                    st.markdown(f"**Bot Yaniti:**\n\n```\n{result.get('text')}\n```")
+                
+                if result.get("media"):
+                    st.image(result.get("media"), use_column_width=True, caption=f"{ticker} Derinlik Goruntusu")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Oturumu kapat butonu
+    if st.button("❌ Oturumu Kapat", type="secondary"):
+        client = get_client(st.session_state.api_id, st.session_state.api_hash)
+        loop.run_until_complete(client.log_out())
+        st.session_state.is_authorized = False
+        st.session_state.api_id = ""
+        st.session_state.api_hash = ""
+        st.session_state.phone = ""
+        st.session_state.client = None
+        st.rerun()

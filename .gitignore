@@ -52,3 +52,7 @@ watchlist.json
 src/watchlist.json
 telegram_config.json
 src/telegram_config.json
+
+# UserBot Data
+*.session
+*.session-journal
