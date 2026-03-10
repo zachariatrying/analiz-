@@ -46,11 +46,29 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+import os
+
+CONFIG_FILE = "telegram_config.json"
+
+def load_tg_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            return {}
+    return {}
+
+def save_tg_config(token, chat_id):
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump({"token": token, "chat_id": chat_id}, f)
+
 # Session state
+config = load_tg_config()
 if 'tg_token' not in st.session_state:
-    st.session_state.tg_token = ""
+    st.session_state.tg_token = config.get("token", "")
 if 'tg_chat_id' not in st.session_state:
-    st.session_state.tg_chat_id = ""
+    st.session_state.tg_chat_id = config.get("chat_id", "")
 if 'watchlist' not in st.session_state:
     st.session_state.watchlist = []
 
@@ -100,7 +118,7 @@ st.markdown("""
 </div>
 <div class="step-card">
     <span style="color:#818cf8; font-weight:700;">Adim 3:</span>
-    <span style="color:#e2e8f0;"> Asagiya token ve chat ID giriniz</span>
+    <span style="color:#e2e8f0;"> Asagiya token ve chat ID girip 'Kaydet' butonuna basin. Bilgiler sadece cihazinizda kalir.</span>
 </div>
 """, unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
@@ -112,10 +130,14 @@ st.markdown("### Baglanti Ayarlari")
 col1, col2 = st.columns(2)
 with col1:
     tg_token = st.text_input("Bot Token", value=st.session_state.tg_token, type="password", placeholder="1234567890:ABCDefGhIjKlMnOpQrStUvWxYz")
-    st.session_state.tg_token = tg_token
 with col2:
     tg_chat = st.text_input("Chat ID", value=st.session_state.tg_chat_id, placeholder="123456789")
+
+if st.button("AYARLARI KAYDET"):
+    st.session_state.tg_token = tg_token
     st.session_state.tg_chat_id = tg_chat
+    save_tg_config(tg_token, tg_chat)
+    st.success("Tebrikler! Telegram ayarlariniz cihazinizda basariyla kaydedildi. Artık sayfa yenilense de gitmeyecek.")
 
 # Test Butonu
 if st.button("BAGLANTI TESTI", type="primary", use_container_width=True):
