@@ -331,6 +331,10 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     btn_baslat = st.button("TARAMAYI BASLAT", type="primary", use_container_width=True)
 
+    st.divider()
+    st.markdown("##### Filtreler")
+    only_confirmed = st.checkbox("Sadece Onaylanmis (Confirmed)", value=False, help="Henuz olusum asamasinda olan (Unconfirmed) formasyonlari gizler.")
+
 # Init session state
 if 'watchlist' not in st.session_state:
     st.session_state.watchlist = []
@@ -351,6 +355,8 @@ if btn_baslat:
         if df is not None:
             sonuc_listesi = analiz_yap(df, secilen_formasyonlar, tolerans, z_etiket, tek_hisse_aktif)
             for sonuc in sonuc_listesi:
+                if only_confirmed and "unconfirmed" in str(sonuc.get('Durum', '')).lower():
+                    continue
                 sonuc['Hisse'] = hisse
                 bulunanlar.append(sonuc)
     bar.empty()
@@ -381,60 +387,62 @@ else:
     _per = sp.get('yf_per', '2y')
     _res = sp.get('yf_res', None)
 
-    for idx_v, veri in enumerate(bulunanlar):
-        f_name = veri['Formasyon']
-        sinyal_renk = "[Bullish]" if veri.get('Sinyal') == 'Bullish' else "[Bearish]" if veri.get('Sinyal') == 'Bearish' else ""
-        baslik = f"{veri['Hisse']} | {f_name} {sinyal_renk} | Skor: {veri['Skor']} | Pot: %{veri['Potansiyel']:.1f}"
+        for idx_v, veri in enumerate(bulunanlar):
+            f_name = veri['Formasyon']
+            sinyal_renk = "[Bullish]" if veri.get('Sinyal') == 'Bullish' else "[Bearish]" if veri.get('Sinyal') == 'Bearish' else ""
+            baslik = f"{veri['Hisse']} | {f_name} {sinyal_renk} | Skor: {veri['Skor']} | Pot: %{veri['Potansiyel']:.1f}"
 
-        with st.expander(baslik, expanded=True):
-            df_c = veri_getir(veri['Hisse'], _bar, _int, _per, _res)
-            if df_c is not None:
-                fig = grafik_ciz(df_c, veri['Hisse'], veri)
-                st.plotly_chart(fig, use_container_width=True, key=f"chart_{veri['Hisse']}_{idx_v}")
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Fiyat", f"{veri['Fiyat']:.2f}")
-            c2.metric("Hedef", f"{veri['Hedef']:.2f}")
-            c3.metric("Stop", f"{veri.get('Stop', 0):.2f}")
-            c4.metric("Skor", f"{veri['Skor']}/100")
-            if veri.get('Strateji'): st.info(f"Strateji: {veri['Strateji']}")
-            meta_parts = []
-            if veri.get('Durum'): meta_parts.append(f"Durum: {veri['Durum']}")
-            if veri.get('Kalite'): meta_parts.append(f"Kalite: {veri['Kalite']}")
-            if veri.get('Vade'): meta_parts.append(f"Vade: {veri['Vade']}")
-            if meta_parts: st.caption(" | ".join(meta_parts))
-            if "Genel" in veri['Formasyon']: st.caption("Formasyon bulunamadi, genel gorunum sunuluyor.")
+            with st.expander(baslik, expanded=True):
+                df_c = veri_getir(veri['Hisse'], _bar, _int, _per, _res)
+                if df_c is not None:
+                    fig = grafik_ciz(df_c, veri['Hisse'], veri)
+                    st.plotly_chart(fig, use_container_width=True, key=f"chart_{veri['Hisse']}_{idx_v}")
+                c1, c2, c3, c4 = st.columns(4)
+                c1.metric("Fiyat", f"{veri['Fiyat']:.2f}")
+                c2.metric("Hedef", f"{veri['Hedef']:.2f}")
+                c3.metric("Stop", f"{veri.get('Stop', 0):.2f}")
+                c4.metric("Skor", f"{veri['Skor']}/100")
+                if veri.get('Strateji'): st.info(f"Strateji: {veri['Strateji']}")
+                meta_parts = []
+                if veri.get('Durum'): meta_parts.append(f"Durum: {veri['Durum']}")
+                if veri.get('Kalite'): meta_parts.append(f"Kalite: {veri['Kalite']}")
+                if veri.get('Vade'): meta_parts.append(f"Vade: {veri['Vade']}")
+                if meta_parts: st.caption(" | ".join(meta_parts))
+                if "Genel" in veri['Formasyon']: st.caption("Formasyon bulunamadi, genel gorunum sunuluyor.")
 
-            # Alarma Ekle butonu
-            alarm_col1, alarm_col2 = st.columns([1, 3])
-            with alarm_col1:
-                if st.button("ALARMA EKLE", key=f"alarm_{veri['Hisse']}_{idx_v}", use_container_width=True):
-                    new_alarm = {
-                        'hisse': veri['Hisse'],
-                        'tur': 'Fiyat Uzerine Ciktiginda',
-                        'hedef': veri['Hedef'],
-                    }
-                    st.session_state.watchlist.append(new_alarm)
-                    st.success(f"{veri['Hisse']} hedef fiyat alarmi eklendi: {veri['Hedef']:.2f} TL")
-            with alarm_col2:
-                st.caption(f"Hedef {veri['Hedef']:.2f} TL uzerine alarm kurulur")
+                # Alarma Ekle butonu
+                alarm_col1, alarm_col2 = st.columns([1, 3])
+                with alarm_col1:
+                    if st.button("ALARMA EKLE", key=f"alarm_{veri['Hisse']}_{idx_v}", use_container_width=True):
+                        new_alarm = {
+                            'hisse': veri['Hisse'],
+                            'tur': 'Formasyon Hedef / Stop',
+                            'hedef': veri['Hedef'],
+                            'stop': veri.get('Stop', 0.0),
+                        }
+                        st.session_state.watchlist.append(new_alarm)
+                        st.success(f"{veri['Hisse']} alarma eklendi (Hedef: {veri['Hedef']:.2f}, Stop: {veri.get('Stop', 0.0):.2f})")
+                with alarm_col2:
+                    st.caption(f"Hedef {veri['Hedef']:.2f} ve Stop {veri.get('Stop', 0.0):.2f} degerleri ile listeye duser.")
 
-    # Toplu Alarma Ekle
-    st.divider()
-    col_bulk, col_info = st.columns([1, 2])
-    with col_bulk:
-        if st.button("TUM SONUCLARI ALARMA EKLE", type="primary", use_container_width=True):
-            added = 0
-            for v in bulunanlar:
-                if "Genel" not in v['Formasyon']:
-                    st.session_state.watchlist.append({
-                        'hisse': v['Hisse'],
-                        'tur': 'Fiyat Uzerine Ciktiginda',
-                        'hedef': v['Hedef'],
-                    })
-                    added += 1
-            st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
-    with col_info:
-        st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")
+        # Toplu Alarma Ekle
+        st.divider()
+        col_bulk, col_info = st.columns([1, 2])
+        with col_bulk:
+            if st.button("TUM SONUCLARI ALARMA EKLE", type="primary", use_container_width=True):
+                added = 0
+                for v in bulunanlar:
+                    if "Genel" not in v['Formasyon']:
+                        st.session_state.watchlist.append({
+                            'hisse': v['Hisse'],
+                            'tur': 'Formasyon Hedef / Stop',
+                            'hedef': v['Hedef'],
+                            'stop': v.get('Stop', 0.0),
+                        })
+                        added += 1
+                st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
+        with col_info:
+            st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")
 
     st.divider()
     st.markdown("### Ozet Tablo")

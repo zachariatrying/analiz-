@@ -174,8 +174,10 @@ else:
         else:
             msg = "<b>BIST Teknik Analiz - Alarm Listesi</b>\n\n"
             for i, alarm in enumerate(st.session_state.watchlist, 1):
-                tur_icon = "UST" if "Uzerine" in alarm['tur'] else "ALT"
-                msg += f"{i}. <b>{alarm['hisse']}</b> | {tur_icon} | Hedef: {alarm['hedef']:.2f} TL\n"
+                msg += f"{i}. <b>{alarm['hisse']}</b> | Hedef: <b>{alarm['hedef']:.2f}</b>"
+                if 'stop' in alarm and alarm['stop'] > 0:
+                    msg += f" | Stop: <b>{alarm['stop']:.2f}</b>"
+                msg += "\n"
             msg += f"\nToplam: {alarm_count} alarm"
 
             ok, resp = send_telegram(tg_token, tg_chat, msg)
