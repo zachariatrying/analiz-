@@ -284,7 +284,7 @@ if btn_test:
                 textfont=dict(color='#e2e8f0'),
             )])
             fig_pie.update_layout(
-                paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                paper_bgcolor='rgba(0,0,0,0)',
                 height=350, margin=dict(l=10, r=10, t=10, b=10),
                 font=dict(color='#94a3b8'),
                 showlegend=False,

@@ -331,6 +331,10 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     btn_baslat = st.button("TARAMAYI BASLAT", type="primary", use_container_width=True)
 
+# Init watchlist in session state
+if 'watchlist' not in st.session_state:
+    st.session_state.watchlist = []
+
 # Sonuclar
 if btn_baslat:
     temiz_hisseler = sorted(list(set([h.upper() for h in hisseler if len(h) > 1])))
@@ -389,6 +393,38 @@ if btn_baslat:
                 if meta_parts: st.caption(" | ".join(meta_parts))
                 if "Genel" in veri['Formasyon']: st.caption("Formasyon bulunamadi, genel gorunum sunuluyor.")
 
+                # Alarma Ekle butonu
+                alarm_col1, alarm_col2 = st.columns([1, 3])
+                with alarm_col1:
+                    if st.button("ALARMA EKLE", key=f"alarm_{veri['Hisse']}_{idx_v}", use_container_width=True):
+                        new_alarm = {
+                            'hisse': veri['Hisse'],
+                            'tur': 'Fiyat Uzerine Ciktiginda',
+                            'hedef': veri['Hedef'],
+                        }
+                        st.session_state.watchlist.append(new_alarm)
+                        st.success(f"{veri['Hisse']} hedef fiyat alarmi eklendi: {veri['Hedef']:.2f} TL")
+                with alarm_col2:
+                    st.caption(f"Hedef {veri['Hedef']:.2f} TL uzerine alarm kurulur")
+
+        # Toplu Alarma Ekle
+        st.divider()
+        col_bulk, col_info = st.columns([1, 2])
+        with col_bulk:
+            if st.button("TUM SONUCLARI ALARMA EKLE", type="primary", use_container_width=True):
+                added = 0
+                for v in bulunanlar:
+                    if "Genel" not in v['Formasyon']:
+                        st.session_state.watchlist.append({
+                            'hisse': v['Hisse'],
+                            'tur': 'Fiyat Uzerine Ciktiginda',
+                            'hedef': v['Hedef'],
+                        })
+                        added += 1
+                st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
+        with col_info:
+            st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")
+
         st.divider()
         st.markdown("### Ozet Tablo")
         df_final = pd.DataFrame(bulunanlar)
@@ -402,3 +438,4 @@ if btn_baslat:
         })
         csv = df_final[cols].to_csv(index=False).encode('utf-8-sig')
         st.download_button(label="Sonuclari CSV olarak indir", data=csv, file_name="tarama_sonuclari.csv", mime="text/csv")
+
