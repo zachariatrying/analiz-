@@ -52,7 +52,11 @@ st.markdown("""
 # Helper function
 def get_client(api_id, api_hash):
     if st.session_state.client is None:
-        client = TelegramClient(SESSION_FILE, api_id, api_hash)
+        try:
+            api_id_int = int(api_id)
+        except ValueError:
+            api_id_int = 0
+        client = TelegramClient(SESSION_FILE, api_id_int, api_hash)
         st.session_state.client = client
     return st.session_state.client
 
