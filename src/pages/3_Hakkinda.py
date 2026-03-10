@@ -1,16 +1,12 @@
 """
-🎓 ZACHAİRA — Eğitim & Hakkında
-Teknik analiz formasyonları ve indikatör rehberi
+Egitim ve Hakkinda
+Teknik analiz formasyonlari ve indikator rehberi
 """
 import streamlit as st
 import pandas as pd
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  SAYFA AYARLARI
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-st.set_page_config(page_title="Hakkında — ZACHAİRA", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="Hakkinda", page_icon="", layout="wide")
 
-# Premium CSS
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -34,12 +30,7 @@ st.markdown("""
         border-color: rgba(99, 102, 241, 0.4);
         box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
     }
-    .pattern-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #e2e8f0;
-        margin-bottom: 8px;
-    }
+    .pattern-title { font-size: 1.15rem; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
     .pattern-type-bullish {
         display: inline-block; padding: 3px 10px; border-radius: 16px;
         font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;
@@ -55,12 +46,6 @@ st.markdown("""
         font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;
         background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3);
     }
-    .indicator-card {
-        background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, rgba(168,85,247,0.05) 100%);
-        border-radius: 14px;
-        border: 1px solid rgba(99,102,241,0.12);
-        padding: 20px; margin-bottom: 12px;
-    }
     hr { border-color: rgba(255,255,255,0.06) !important; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -68,366 +53,174 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  BAŞLIK
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 st.markdown("""
 <div style="text-align:center; padding:10px 0 24px 0;">
     <h1 style="font-size:2.2rem; font-weight:800;
         background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         margin-bottom:4px;">
-        🎓 Eğitim & Hakkında
+        Egitim ve Hakkinda
     </h1>
-    <p style="color:#64748b; font-size:0.95rem;">Teknik analiz formasyonları ve indikatör rehberi</p>
+    <p style="color:#64748b; font-size:0.95rem;">Teknik analiz formasyonlari ve indikator rehberi</p>
 </div>
 """, unsafe_allow_html=True)
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  TABS
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-tab1, tab2, tab3 = st.tabs(["📐 Formasyonlar", "📊 İndikatörler", "ℹ️ Proje Hakkında"])
+tab1, tab2, tab3 = st.tabs(["Formasyonlar", "Indikatorler", "Proje Hakkinda"])
 
-# ━━━━━━ TAB 1: FORMASYONLAR ━━━━━━
 with tab1:
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # TOBO
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">🔄</span>
-            <div>
-                <div class="pattern-title">TOBO — Ters Omuz Baş Omuz (Inverse Head & Shoulders)</div>
-                <span class="pattern-type-bullish">YÜKSELIŞ (Bullish Reversal)</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            Düşüş trendinin sonunda oluşan <strong style="color:#e2e8f0;">dip dönüş formasyonu</strong>dur. Üç ardışık dip noktasından oluşur:
-            ortadaki dip (baş) en derin, iki yandaki dipler (omuzlar) daha sığdır.
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin:12px 0;">
-            <p style="color:#818cf8; font-weight:600; margin-bottom:8px; font-size:0.85rem;">📐 Geometrik Yapı:</p>
-            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.8; margin:0;">
-                <strong style="color:#e2e8f0;">Sol Omuz:</strong> İlk dip noktası — panik satışları ile yüksek hacim<br>
-                <strong style="color:#e2e8f0;">Baş:</strong> En derin dip — düşük hacim (absorpsiyon)<br>
-                <strong style="color:#e2e8f0;">Sağ Omuz:</strong> Sığ dip — satış baskısı azalır, düşük hacim<br>
-                <strong style="color:#e2e8f0;">Boyun Çizgisi:</strong> Omuzların tepelerini birleştiren direnç — kırılma sinyali<br>
-                <strong style="color:#4ade80;">Hedef:</strong> Baş → Boyun arası mesafe kadar yukarı
-            </p>
-        </div>
-        <p style="color:#64748b; font-size:0.8rem;">
-            ⚡ ZACHAİRA bu formasyonu ZigZag + Fibonacci oranlarıyla ve hacim profili doğrulamasıyla tespit eder.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    patterns = [
+        ("TOBO -- Ters Omuz Bas Omuz (Inverse Head and Shoulders)", "YUKSELIS (Bullish Reversal)", "bullish",
+         "Dusus trendinin sonunda olusan dip donus formasyonudur. Uc ardisik dip noktasindan olusur: ortadaki dip (bas) en derin, iki yandaki dipler (omuzlar) daha sigdir.",
+         [("Sol Omuz", "Ilk dip noktasi -- panik satislari ile yuksek hacim"),
+          ("Bas", "En derin dip -- dusuk hacim (absorpsiyon)"),
+          ("Sag Omuz", "Sig dip -- satis baskisi azalir, dusuk hacim"),
+          ("Boyun Cizgisi", "Omuzlarin tepelerini birlestiren direnc -- kirilma sinyali"),
+          ("Hedef", "Bas - Boyun arasi mesafe kadar yukari")]),
 
-    # OBO
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">⚠️</span>
-            <div>
-                <div class="pattern-title">OBO — Omuz Baş Omuz (Head & Shoulders)</div>
-                <span class="pattern-type-bearish">DÜŞÜŞ (Bearish Reversal)</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            Yükseliş trendinin sonunda oluşan <strong style="color:#e2e8f0;">tepe dönüş formasyonu</strong>dur.
-            TOBO'nun tam tersidir — üç ardışık tepe noktasından oluşur ve fiyatın düşeceğinin habercisidir.
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin:12px 0;">
-            <p style="color:#818cf8; font-weight:600; margin-bottom:8px; font-size:0.85rem;">📐 Geometrik Yapı:</p>
-            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.8; margin:0;">
-                <strong style="color:#e2e8f0;">Sol Omuz:</strong> İlk tepe noktası<br>
-                <strong style="color:#e2e8f0;">Baş:</strong> En yüksek tepe<br>
-                <strong style="color:#e2e8f0;">Sağ Omuz:</strong> Düşük tepe — alıcı gücü azaldı<br>
-                <strong style="color:#f87171;">Hedef:</strong> Baş → Boyun arası mesafe kadar aşağı
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        ("OBO -- Omuz Bas Omuz (Head and Shoulders)", "DUSUS (Bearish Reversal)", "bearish",
+         "Yukselis trendinin sonunda olusan tepe donus formasyonudur. TOBO nun tam tersidir -- uc ardisik tepe noktasindan olusur.",
+         [("Sol Omuz", "Ilk tepe noktasi"),
+          ("Bas", "En yuksek tepe"),
+          ("Sag Omuz", "Dusuk tepe -- alici gucu azaldi"),
+          ("Hedef", "Bas - Boyun arasi mesafe kadar asagi")]),
 
-    # Cup & Handle
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">☕</span>
-            <div>
-                <div class="pattern-title">Fincan & Kulp (Cup and Handle)</div>
-                <span class="pattern-type-bullish">YÜKSELIŞ (Bullish Continuation)</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            William O'Neil tarafından keşfedilen bu formasyon, bir fincan şeklinde <strong style="color:#e2e8f0;">yuvarlak dip</strong> oluşturduktan
-            sonra sağ tarafta küçük bir geri çekilme (kulp) ile tamamlanır. Güçlü yükseliş potansiyeliyle bilinir.
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin:12px 0;">
-            <p style="color:#818cf8; font-weight:600; margin-bottom:8px; font-size:0.85rem;">📐 Anahtar Kriterler:</p>
-            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.8; margin:0;">
-                ✅ Fincan derinliği: %12-33 arası ideal<br>
-                ✅ Yuvarlak dip — V şeklinde olmamalı<br>
-                ✅ Kulp geri çekilmesi: Fincan derinliğinin %50'sinden az<br>
-                ✅ Kırılma noktasında artan hacim<br>
-                <strong style="color:#4ade80;">Hedef:</strong> Fincan derinliği kadar yukarı
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        ("Fincan ve Kulp (Cup and Handle)", "YUKSELIS (Bullish Continuation)", "bullish",
+         "William O Neil tarafindan kesfedilen bu formasyon, bir fincan seklinde yuvarlak dip olusturduktan sonra sag tarafta kucuk bir geri cekilme (kulp) ile tamamlanir.",
+         [("Fincan derinligi", "%12-33 arasi ideal"),
+          ("Yuvarlak dip", "V seklinde olmamali"),
+          ("Kulp geri cekilmesi", "Fincan derinliginin %50 sinden az"),
+          ("Kirilma noktasi", "Artan hacim gerekli"),
+          ("Hedef", "Fincan derinligi kadar yukari")]),
 
-    # Bull Flag
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">🏁</span>
-            <div>
-                <div class="pattern-title">Boğa Bayrak (Bull Flag)</div>
-                <span class="pattern-type-bullish">YÜKSELIŞ (Bullish Continuation)</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            Güçlü bir yükselişin ardından <strong style="color:#e2e8f0;">kısa süreli konsolidasyon</strong> dönemi.
-            Bayrak direği (sert yükseliş) + bayrak (hafif düşüş kanalı) yapısından oluşur.
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin:12px 0;">
-            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.8; margin:0;">
-                <strong style="color:#e2e8f0;">Direk:</strong> Hızlı, yüksek hacimli yükseliş (%20+ ideal)<br>
-                <strong style="color:#e2e8f0;">Bayrak:</strong> Aşağı yönlü paralel kanal, düşük hacim<br>
-                <strong style="color:#4ade80;">Hedef:</strong> Direk uzunluğu kadar yukarı (Flagpole Rule)
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        ("Boga Bayrak (Bull Flag)", "YUKSELIS (Bullish Continuation)", "bullish",
+         "Guclu bir yukselisin ardindan kisa sureli konsolidasyon donemi. Bayrak diregi (sert yukselis) + bayrak (hafif dusus kanali) yapisindan olusur.",
+         [("Direk", "Hizli, yuksek hacimli yukselis (%20+ ideal)"),
+          ("Bayrak", "Asagi yonlu paralel kanal, dusuk hacim"),
+          ("Hedef", "Direk uzunlugu kadar yukari (Flagpole Rule)")]),
 
-    # Flama
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">🔺</span>
-            <div>
-                <div class="pattern-title">Flama (Pennant)</div>
-                <span class="pattern-type-bullish">YÜKSELIŞ (Bullish Continuation)</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            Boğa bayrak formasyonunun bir varyasyonudur. Fark olarak bayraktan farklı olarak
-            <strong style="color:#e2e8f0;">daralan üçgen</strong> şeklinde konsolidasyon gösterir. Kırılma yönü genellikle trend yönündedir.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+        ("Flama (Pennant)", "YUKSELIS (Bullish Continuation)", "bullish",
+         "Boga bayrak formasyonunun bir varyasyonudur. Bayraktan farkli olarak daralan ucgen seklinde konsolidasyon gosterir.",
+         []),
 
-    # RSI Divergence
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">📉</span>
-            <div>
-                <div class="pattern-title">RSI Uyumsuzluk (RSI Divergence)</div>
-                <span class="pattern-type-neutral">DÖNÜŞ SİNYALİ</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            Fiyat ile RSI indikatörünün <strong style="color:#e2e8f0;">zıt yönde hareket etmesi</strong>.
-            Trendin zayıfladığını ve potansiyel dönüşü gösterir.
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin:12px 0;">
-            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.8; margin:0;">
-                <strong style="color:#4ade80;">Boğa Uyumsuzluğu:</strong> Fiyat düşerken RSI yükseliyor → Alım sinyali<br>
-                <strong style="color:#f87171;">Ayı Uyumsuzluğu:</strong> Fiyat yükselirken RSI düşüyor → Satım sinyali<br>
-                ⚡ En güçlü sinyaller RSI'ın aşırı bölgelerde (30 altı / 70 üstü) olduğunda oluşur.
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        ("RSI Uyumsuzluk (RSI Divergence)", "DONUS SINYALI", "neutral",
+         "Fiyat ile RSI indikatorunun zit yonde hareket etmesi. Trendin zayifladigini ve potansiyel donusu gosterir.",
+         [("Boga Uyumsuzlugu", "Fiyat duserken RSI yukseliyor -- Alim sinyali"),
+          ("Ayi Uyumsuzlugu", "Fiyat yukselirken RSI dusuyor -- Satim sinyali"),
+          ("En guclu sinyaller", "RSI nin asiri bolgelerde (30 alti / 70 ustu) oldugu durumlar")]),
 
-    # Mum Formasyonları
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">🕯️</span>
-            <div>
-                <div class="pattern-title">Mum Formasyonları (Candlestick Patterns)</div>
-                <span class="pattern-type-neutral">DÖNÜŞ SİNYALLERİ</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            Japon mum grafiklerindeki tek veya çift mum formasyonları. Son 2-3 barı analiz ederek
-            <strong style="color:#e2e8f0;">kısa vadeli dönüş sinyalleri</strong> üretir.
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin:12px 0;">
-            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.8; margin:0;">
-                <strong style="color:#e2e8f0;">Doji:</strong> Açılış ≈ Kapanış — Kararsızlık, potansiyel dönüş<br>
-                <strong style="color:#e2e8f0;">Hammer:</strong> Uzun alt gölge — Dip bölgede alım tepesi<br>
-                <strong style="color:#e2e8f0;">Engulfing:</strong> Yutan mum — Güçlü dönüş sinyali<br>
-                <strong style="color:#e2e8f0;">Shooting Star:</strong> Uzun üst gölge — Tepe bölgede satım baskısı
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        ("Mum Formasyonlari (Candlestick Patterns)", "DONUS SINYALLERI", "neutral",
+         "Japon mum grafiklerindeki tek veya cift mum formasyonlari. Son 2-3 bari analiz ederek kisa vadeli donus sinyalleri uretir.",
+         [("Doji", "Acilis = Kapanis -- Kararsizlik, potansiyel donus"),
+          ("Hammer", "Uzun alt golge -- Dip bolgede alim tepesi"),
+          ("Engulfing", "Yutan mum -- Guclu donus sinyali"),
+          ("Shooting Star", "Uzun ust golge -- Tepe bolgede satim baskisi")]),
 
-    # High Tight Flag
-    st.markdown("""
-    <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-            <span style="font-size:2rem;">🚀</span>
-            <div>
-                <div class="pattern-title">High Tight Flag (Roket Formasyonu)</div>
-                <span class="pattern-type-bullish">YÜKSEK MOMENTUM</span>
-            </div>
-        </div>
-        <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            Nadir görülen ama son derece güçlü bir formasyon. <strong style="color:#e2e8f0;">%90+ kazanç</strong> ardından
-            %20'den az gevşeme. Tekrar kırılma yapması halinde yüksek potansiyel sunar.
-        </p>
-        <div style="background:rgba(0,0,0,0.3); border-radius:12px; padding:16px; margin:12px 0;">
-            <p style="color:#94a3b8; font-size:0.85rem; line-height:1.8; margin:0;">
-                <strong style="color:#e2e8f0;">Kriter 1:</strong> 40 bar içinde %90+ yükseliş (Direk)<br>
-                <strong style="color:#e2e8f0;">Kriter 2:</strong> Konsolidasyonda %20'den az geri çekilme<br>
-                <strong style="color:#e2e8f0;">Kriter 3:</strong> Sıkı konsolidasyon süresi<br>
-                ⚡ Thomas Bulkowski araştırmasına göre en yüksek başarı oranına sahip formasyon
-            </p>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+        ("High Tight Flag (Roket Formasyonu)", "YUKSEK MOMENTUM", "bullish",
+         "Nadir gorulen ama son derece guclu bir formasyon. %90+ kazanc ardindan %20 den az gevseme.",
+         [("Kriter 1", "40 bar icinde %90+ yukselis (Direk)"),
+          ("Kriter 2", "Konsolidasyonda %20 den az geri cekilme"),
+          ("Kriter 3", "Siki konsolidasyon suresi"),
+          ("Kaynak", "Thomas Bulkowski arastirmasina gore en yuksek basari oranina sahip formasyon")]),
+    ]
 
+    for name, ptype, pclass, desc, details in patterns:
+        st.markdown(f"""
+        <div class="glass-card">
+            <div class="pattern-title">{name}</div>
+            <span class="pattern-type-{pclass}">{ptype}</span>
+            <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem; margin-top:12px;">{desc}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        if details:
+            details_df = pd.DataFrame(details, columns=["Parametre", "Aciklama"])
+            st.dataframe(details_df, use_container_width=True, hide_index=True)
 
-# ━━━━━━ TAB 2: İNDİKATÖRLER ━━━━━━
 with tab2:
     st.markdown("<br>", unsafe_allow_html=True)
 
     indicators = [
-        {
-            "icon": "📊",
-            "name": "RSI (Relative Strength Index)",
-            "desc": "Fiyatın aşırı alım veya aşırı satım bölgesinde olup olmadığını gösteren momentum osilatörüdür.",
-            "details": [
-                ("Periyot", "14 bar (standart)"),
-                ("Aşırı Alım", "> 70 → Satış baskısı beklenir"),
-                ("Aşırı Satım", "< 30 → Alım tepkisi beklenir"),
-                ("Nötr Bölge", "30-70 arası — trend devam edebilir"),
-            ],
-            "formula": "RSI = 100 - (100 / (1 + RS)), RS = Ortalama Kazanç / Ortalama Kayıp",
-        },
-        {
-            "icon": "📈",
-            "name": "SMA (Simple Moving Average)",
-            "desc": "Belirli bir dönemdeki kapanış fiyatlarının aritmetik ortalamasıdır. Trendin yönünü ve gücünü belirler.",
-            "details": [
-                ("SMA 20", "Kısa vadeli trend — 20 günlük ortalama"),
-                ("SMA 50", "Orta vadeli trend — 50 günlük ortalama"),
-                ("Altın Çapraz", "SMA 20 > SMA 50 → Yükseliş sinyali"),
-                ("Ölüm Çaprazı", "SMA 20 < SMA 50 → Düşüş sinyali"),
-            ],
-            "formula": "SMA = (P₁ + P₂ + ... + Pₙ) / n",
-        },
-        {
-            "icon": "⚡",
-            "name": "ZigZag Algoritması",
-            "desc": "Fiyat hareketlerindeki gürültüyü filtreleyerek önemli pivot noktalarını (tepeler ve dipler) tespit eder.",
-            "details": [
-                ("Yöntem", "Yüzde bazlı sapma ile kritik noktalar"),
-                ("Sapma", "Varsayılan %3 — küçük dalgalanmalar filtrelenir"),
-                ("Kullanım", "Formasyon tespitinin temel bileşeni"),
-                ("Çıktı", "Tepe (High) ve Dip (Low) noktaları listesi"),
-            ],
-            "formula": "Sapma > %X olan noktalar pivot olarak işaretlenir",
-        },
-        {
-            "icon": "🔒",
-            "name": "Destek & Direnç Seviyeleri",
-            "desc": "Fiyatın geçmişte tepki verdiği önemli seviyeler. Destek alım tepkisini, direnç satış baskısını temsil eder.",
-            "details": [
-                ("Tespit", "Lokal ekstremum noktaları (argrelextrema)"),
-                ("Pencere", "10 bar (varsayılan)"),
-                ("Destek (yeşil)", "Fiyatın sıçradığı alt seviyeler"),
-                ("Direnç (kırmızı)", "Fiyatın geri döndüğü üst seviyeler"),
-            ],
-            "formula": "Scipy argrelextrema ile lokal min/max tespiti",
-        },
-        {
-            "icon": "📐",
-            "name": "Lineer Regresyon Kanalı (Fair Value)",
-            "desc": "Fiyatın istatistiksel olarak 'adil değer' çevresindeki hareketini ölçer. Standart sapma bantları ile birlikte kullanılır.",
-            "details": [
-                ("Orta Çizgi", "Lineer regresyon doğrusu (best fit)"),
-                ("Üst Bant", "Orta + 2σ → Aşırı değerli bölge"),
-                ("Alt Bant", "Orta - 2σ → Ucuz bölge"),
-                ("R²", "Regresyon uyum kalitesi (trend gücü)"),
-            ],
-            "formula": "y = mx + b ± kσ (k = standart sapma çarpanı)",
-        },
-        {
-            "icon": "📊",
-            "name": "Hacim Profili Analizi",
-            "desc": "Formasyonun hacim ile doğrulanıp doğrulanmadığını kontrol eder. Gerçek kırılmalar yüksek hacimle desteklenir.",
-            "details": [
-                ("Yüksek Hacim", "Kırılma noktalarında beklenir"),
-                ("Düşük Hacim", "Konsolidasyon dönemlerinde normal"),
-                ("Hacim SMA", "20 periyotluk hacim ortalaması"),
-                ("Doğrulama", "Kırılma hacmi > 1.5x ortalama → Güçlü sinyal"),
-            ],
-            "formula": "Hacim Oranı = Mevcut Hacim / SMA(20) hacim",
-        },
+        ("RSI (Relative Strength Index)",
+         "Fiyatin asiri alim veya asiri satim bolgesinde olup olmadigini gosteren momentum osilatoru.",
+         [("Periyot", "14 bar (standart)"), ("Asiri Alim", "> 70 - Satis baskisi beklenir"),
+          ("Asiri Satim", "< 30 - Alim tepkisi beklenir"), ("Notr Bolge", "30-70 arasi")],
+         "RSI = 100 - (100 / (1 + RS)), RS = Ortalama Kazanc / Ortalama Kayip"),
+
+        ("SMA (Simple Moving Average)",
+         "Belirli bir donemdeki kapanis fiyatlarinin aritmetik ortalamasidir.",
+         [("SMA 20", "Kisa vadeli trend"), ("SMA 50", "Orta vadeli trend"),
+          ("Altin Capraz", "SMA 20 > SMA 50 - Yukselis sinyali"),
+          ("Olum Caprazi", "SMA 20 < SMA 50 - Dusus sinyali")],
+         "SMA = (P1 + P2 + ... + Pn) / n"),
+
+        ("ZigZag Algoritmasi",
+         "Fiyat hareketlerindeki gurultuyu filtreleyerek onemli pivot noktalarini tespit eder.",
+         [("Yontem", "Yuzde bazli sapma ile kritik noktalar"), ("Sapma", "Varsayilan %3"),
+          ("Kullanim", "Formasyon tespitinin temel bileseni"), ("Cikti", "Tepe ve Dip noktalari listesi")],
+         "Sapma > %X olan noktalar pivot olarak isaretlenir"),
+
+        ("Destek ve Direnc Seviyeleri",
+         "Fiyatin gecmiste tepki verdigi onemli seviyeler.",
+         [("Tespit", "Lokal ekstremum noktalari (argrelextrema)"), ("Pencere", "10 bar (varsayilan)"),
+          ("Destek", "Fiyatin sicradigi alt seviyeler"), ("Direnc", "Fiyatin geri dondugu ust seviyeler")],
+         "Scipy argrelextrema ile lokal min/max tespiti"),
+
+        ("Lineer Regresyon Kanali (Fair Value)",
+         "Fiyatin istatistiksel olarak adil deger cevresindeki hareketini olcer.",
+         [("Orta Cizgi", "Lineer regresyon dogrusu"), ("Ust Bant", "Orta + 2 sigma"),
+          ("Alt Bant", "Orta - 2 sigma"), ("R2", "Regresyon uyum kalitesi")],
+         "y = mx + b +/- k*sigma"),
+
+        ("Hacim Profili Analizi",
+         "Formasyonun hacim ile dogrulanip dogrulanmadigini kontrol eder.",
+         [("Yuksek Hacim", "Kirilma noktalarinda beklenir"), ("Dusuk Hacim", "Konsolidasyon donemlerinde normal"),
+          ("Hacim SMA", "20 periyotluk hacim ortalamasi"), ("Dogrulama", "Kirilma hacmi > 1.5x ortalama")],
+         "Hacim Orani = Mevcut Hacim / SMA(20) hacim"),
     ]
 
-    for ind in indicators:
+    for name, desc, details, formula in indicators:
         st.markdown(f"""
         <div class="glass-card">
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-                <span style="font-size:1.5rem;">{ind['icon']}</span>
-                <div class="pattern-title" style="margin:0;">{ind['name']}</div>
-            </div>
-            <p style="color:#94a3b8; font-size:0.9rem; line-height:1.6; margin-bottom:12px;">{ind['desc']}</p>
+            <div class="pattern-title">{name}</div>
+            <p style="color:#94a3b8; font-size:0.9rem; line-height:1.6;">{desc}</p>
         </div>
         """, unsafe_allow_html=True)
-
-        # Details table
-        details_df = pd.DataFrame(ind['details'], columns=["Parametre", "Açıklama"])
+        details_df = pd.DataFrame(details, columns=["Parametre", "Aciklama"])
         st.dataframe(details_df, use_container_width=True, hide_index=True)
-
         st.markdown(f"""
-        <div style="background:rgba(99,102,241,0.08); border-radius:10px; padding:10px 16px; margin-bottom:20px;
-            border-left: 3px solid #818cf8;">
-            <span style="color:#818cf8; font-weight:600; font-size:0.8rem;">📐 Formül: </span>
-            <code style="color:#c084fc; font-size:0.85rem;">{ind['formula']}</code>
+        <div style="background:rgba(99,102,241,0.08); border-radius:10px; padding:10px 16px; margin-bottom:20px; border-left: 3px solid #818cf8;">
+            <span style="color:#818cf8; font-weight:600; font-size:0.8rem;">Formul: </span>
+            <code style="color:#c084fc; font-size:0.85rem;">{formula}</code>
         </div>
         """, unsafe_allow_html=True)
 
-
-# ━━━━━━ TAB 3: PROJE HAKKINDA ━━━━━━
 with tab3:
     st.markdown("<br>", unsafe_allow_html=True)
 
     st.markdown("""
     <div class="glass-card">
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
-            <span style="font-size:2.5rem;">🦅</span>
-            <div>
-                <h2 style="color:#e2e8f0; margin:0; font-size:1.5rem;">ZACHAİRA</h2>
-                <p style="color:#64748b; margin:0; font-size:0.85rem;">BIST Borsa Teknik Analiz Platformu</p>
-            </div>
-        </div>
+        <h2 style="color:#e2e8f0; margin:0 0 8px 0; font-size:1.5rem;">BIST Teknik Analiz Platformu</h2>
         <p style="color:#94a3b8; line-height:1.7; font-size:0.9rem;">
-            ZACHAİRA, Borsa İstanbul (BIST) hisselerini otomatik olarak tarayan ve klasik teknik analiz
-            formasyonlarını tespit eden bir platformdur. ZigZag algoritması, geometrik doğrulama ve hacim
-            profili analizi kullanarak yatırımcılara potansiyel alım/satım fırsatlarını görselleştirir.
+            Borsa Istanbul (BIST) hisselerini otomatik olarak tarayan ve klasik teknik analiz
+            formasyonlarini tespit eden bir platformdur. ZigZag algoritmasi, geometrik dogrulama ve hacim
+            profili analizi kullanarak yatirimcilara potansiyel alim/satim firsatlarini gorsellestirir.
         </p>
     </div>
     """, unsafe_allow_html=True)
 
     col1, col2 = st.columns(2)
-
     with col1:
         st.markdown("""
         <div class="glass-card">
-            <h3 style="color:#e2e8f0; font-size:1.1rem; margin-bottom:12px;">🛠️ Teknoloji Stack</h3>
+            <h3 style="color:#e2e8f0; font-size:1.1rem; margin-bottom:12px;">Teknoloji Stack</h3>
             <div style="color:#94a3b8; font-size:0.9rem; line-height:2;">
-                • <strong style="color:#e2e8f0;">Python 3.10+</strong> — Ana programlama dili<br>
-                • <strong style="color:#e2e8f0;">Streamlit</strong> — Web arayüzü framework<br>
-                • <strong style="color:#e2e8f0;">Plotly</strong> — İnteraktif grafik kütüphanesi<br>
-                • <strong style="color:#e2e8f0;">Pandas & NumPy</strong> — Veri işleme<br>
-                • <strong style="color:#e2e8f0;">SciPy</strong> — Sinyal analizi<br>
-                • <strong style="color:#e2e8f0;">yfinance</strong> — Piyasa verisi (ücretsiz)
+                Python 3.10+ -- Ana programlama dili<br>
+                Streamlit -- Web arayuzu framework<br>
+                Plotly -- Interaktif grafik kutuphanesi<br>
+                Pandas ve NumPy -- Veri isleme<br>
+                SciPy -- Sinyal analizi<br>
+                yfinance -- Piyasa verisi (ucretsiz)
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -435,61 +228,60 @@ with tab3:
     with col2:
         st.markdown("""
         <div class="glass-card">
-            <h3 style="color:#e2e8f0; font-size:1.1rem; margin-bottom:12px;">📊 Rakamlarla ZACHAİRA</h3>
+            <h3 style="color:#e2e8f0; font-size:1.1rem; margin-bottom:12px;">Rakamlarla</h3>
             <div style="color:#94a3b8; font-size:0.9rem; line-height:2;">
-                • <strong style="color:#818cf8;">8</strong> farklı formasyon tespiti<br>
-                • <strong style="color:#818cf8;">6</strong> zaman dilimi desteği<br>
-                • <strong style="color:#818cf8;">500+</strong> BIST hissesi tarama<br>
-                • <strong style="color:#818cf8;">~2000</strong> satır analiz motoru<br>
-                • <strong style="color:#818cf8;">10</strong> birim test dosyası<br>
-                • <strong style="color:#818cf8;">100%</strong> ücretsiz veri kaynağı
+                <strong style="color:#818cf8;">8</strong> farkli formasyon tespiti<br>
+                <strong style="color:#818cf8;">6</strong> zaman dilimi destegi<br>
+                <strong style="color:#818cf8;">500+</strong> BIST hissesi tarama<br>
+                <strong style="color:#818cf8;">~2000</strong> satir analiz motoru<br>
+                <strong style="color:#818cf8;">10</strong> birim test dosyasi<br>
+                <strong style="color:#818cf8;">100%</strong> ucretsiz veri kaynagi
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-    # Algoritma Akışı
     st.markdown("""
     <div class="glass-card">
-        <h3 style="color:#e2e8f0; font-size:1.1rem; margin-bottom:16px;">⚙️ Algoritma Akışı</h3>
+        <h3 style="color:#e2e8f0; font-size:1.1rem; margin-bottom:16px;">Algoritma Akisi</h3>
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <div style="text-align:center; flex:1; min-width:120px;">
                 <div style="background:rgba(99,102,241,0.2); border-radius:12px; padding:16px; margin-bottom:8px;">
-                    <div style="font-size:1.5rem;">📡</div>
+                    <div style="font-size:1.2rem; color:#818cf8; font-weight:700;">1</div>
                 </div>
-                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">1. Veri Çekme</div>
+                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">Veri Cekme</div>
                 <div style="color:#64748b; font-size:0.7rem;">yfinance OHLCV</div>
             </div>
-            <div style="color:#475569; font-size:1.2rem;">→</div>
+            <div style="color:#475569; font-size:1.2rem;">-</div>
             <div style="text-align:center; flex:1; min-width:120px;">
                 <div style="background:rgba(99,102,241,0.2); border-radius:12px; padding:16px; margin-bottom:8px;">
-                    <div style="font-size:1.5rem;">📊</div>
+                    <div style="font-size:1.2rem; color:#818cf8; font-weight:700;">2</div>
                 </div>
-                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">2. İndikatörler</div>
+                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">Indikatorler</div>
                 <div style="color:#64748b; font-size:0.7rem;">RSI, SMA, Volume</div>
             </div>
-            <div style="color:#475569; font-size:1.2rem;">→</div>
+            <div style="color:#475569; font-size:1.2rem;">-</div>
             <div style="text-align:center; flex:1; min-width:120px;">
                 <div style="background:rgba(99,102,241,0.2); border-radius:12px; padding:16px; margin-bottom:8px;">
-                    <div style="font-size:1.5rem;">⚡</div>
+                    <div style="font-size:1.2rem; color:#818cf8; font-weight:700;">3</div>
                 </div>
-                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">3. ZigZag</div>
-                <div style="color:#64748b; font-size:0.7rem;">Pivot noktaları</div>
+                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">ZigZag</div>
+                <div style="color:#64748b; font-size:0.7rem;">Pivot noktalari</div>
             </div>
-            <div style="color:#475569; font-size:1.2rem;">→</div>
+            <div style="color:#475569; font-size:1.2rem;">-</div>
             <div style="text-align:center; flex:1; min-width:120px;">
                 <div style="background:rgba(99,102,241,0.2); border-radius:12px; padding:16px; margin-bottom:8px;">
-                    <div style="font-size:1.5rem;">📐</div>
+                    <div style="font-size:1.2rem; color:#818cf8; font-weight:700;">4</div>
                 </div>
-                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">4. Formasyon</div>
-                <div style="color:#64748b; font-size:0.7rem;">Geometrik eşleşme</div>
+                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">Formasyon</div>
+                <div style="color:#64748b; font-size:0.7rem;">Geometrik eslesme</div>
             </div>
-            <div style="color:#475569; font-size:1.2rem;">→</div>
+            <div style="color:#475569; font-size:1.2rem;">-</div>
             <div style="text-align:center; flex:1; min-width:120px;">
                 <div style="background:rgba(74,222,128,0.2); border-radius:12px; padding:16px; margin-bottom:8px;">
-                    <div style="font-size:1.5rem;">🎯</div>
+                    <div style="font-size:1.2rem; color:#4ade80; font-weight:700;">5</div>
                 </div>
-                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">5. Skor & Hedef</div>
-                <div style="color:#64748b; font-size:0.7rem;">Sonuç raporu</div>
+                <div style="color:#e2e8f0; font-size:0.8rem; font-weight:600;">Skor ve Hedef</div>
+                <div style="color:#64748b; font-size:0.7rem;">Sonuc raporu</div>
             </div>
         </div>
     </div>
@@ -497,6 +289,6 @@ with tab3:
 
     st.markdown("""
     <div style="text-align:center; padding:24px 0; color:#475569; font-size:0.8rem;">
-        ⚠️ Bu uygulama eğitim amaçlı geliştirilmiştir. Yatırım tavsiyesi değildir.
+        Bu uygulama egitim amacli gelistirilmistir. Yatirim tavsiyesi degildir.
     </div>
     """, unsafe_allow_html=True)
