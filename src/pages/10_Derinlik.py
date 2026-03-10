@@ -120,31 +120,54 @@ async def get_derinlik(api_id, api_hash, ticker):
         # Send message
         await client.send_message(target_bot, command)
         
-        # Wait for response (timeout 15 sec)
+        # Wait for response (timeout 30 sec for two-step interaction)
         response_msg = None
         media_path = None
         start_time = time.time()
+        clicked_button = False
         
         # Basic polling loops
-        while time.time() - start_time < 15:
+        while time.time() - start_time < 30:
             # Get last 2 messages from bot
             messages = await client.get_messages(target_bot, limit=2)
+            
             for msg in messages:
-                # Check if this message was sent by the bot recently
                 if not msg.out:
-                    response_msg = msg.text
+                    # If message has an image, download it and we are done
                     if msg.media:
                         file_loc = os.path.join(parent_dir, f"tmp_derinlik_{ticker}.jpg")
                         media_path = await client.download_media(msg, file=file_loc)
-                    break
+                        response_msg = msg.text or "Derinlik grafiği başarıyla çekildi."
+                        break
+                        
+                    # If no image yet, but the message has inline buttons and we haven't clicked one yet
+                    if not clicked_button and hasattr(msg, 'buttons') and msg.buttons:
+                        for row in msg.buttons:
+                            for button in row:
+                                btn_text = button.text.lower()
+                                # Check if button matches our target action
+                                if any(kw in btn_text for kw in ["derinlik", "görüntü", "goruntu", "al"]):
+                                    await button.click()
+                                    clicked_button = True
+                                    # Reset timeout since we just requested the image
+                                    start_time = time.time()
+                                    break
+                            if clicked_button:
+                                break
                     
-            if response_msg or media_path:
+                    # If it's just text without buttons and no media yet, store it but keep waiting
+                    if not msg.media and not hasattr(msg, 'buttons'):
+                        response_msg = msg.text
+
+            if media_path:
                 break
                 
             await asyncio.sleep(1)
             
-        if not response_msg and not media_path:
-            return {"error": "Bottan 15 saniye icinde yanit gelmedi veya sunucu yogun."}
+        if not media_path:
+            if response_msg:
+                return {"error": f"Bot resim göndermedi. Son gelen mesaj:\n{response_msg}"}
+            return {"error": "Bottan 30 saniye icinde yanit gelmedi veya sunucu yogun."}
             
         return {"text": response_msg, "media": media_path}
     finally:
