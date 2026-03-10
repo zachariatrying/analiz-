@@ -51,25 +51,25 @@ st.markdown("""
 
 # Helper function
 def get_client(api_id, api_hash):
-    if st.session_state.client is None:
-        try:
-            api_id_int = int(api_id) if api_id else 0
-        except ValueError:
-            api_id_int = 0
-            
-        # Telethon needs non-empty strings, pass a dummy string if empty
-        safe_hash = api_hash if hasattr(api_hash, 'strip') and api_hash.strip() else "dummy_hash"
+    try:
+        api_id_int = int(api_id) if api_id else 0
+    except ValueError:
+        api_id_int = 0
         
-        client = TelegramClient(SESSION_FILE, api_id_int, safe_hash)
-        st.session_state.client = client
-    return st.session_state.client
+    # Telethon needs non-empty strings, pass a dummy string if empty
+    safe_hash = api_hash if hasattr(api_hash, 'strip') and api_hash.strip() else "dummy_hash"
+    
+    return TelegramClient(SESSION_FILE, api_id_int, safe_hash)
 
 async def check_auth():
     if not (st.session_state.api_id and st.session_state.api_hash):
         return False
     client = get_client(st.session_state.api_id, st.session_state.api_hash)
     await client.connect()
-    return await client.is_user_authorized()
+    try:
+        return await client.is_user_authorized()
+    finally:
+        await client.disconnect()
 
 async def send_code():
     client = get_client(st.session_state.api_id, st.session_state.api_hash)
@@ -81,6 +81,8 @@ async def send_code():
             st.session_state.auth_msg = "Dogrulama kodu SMS veya Telegram'dan gonderildi."
     except Exception as e:
         st.session_state.auth_msg = f"Hata: {str(e)}"
+    finally:
+        await client.disconnect()
 
 async def sign_in(code):
     client = get_client(st.session_state.api_id, st.session_state.api_hash)
@@ -92,46 +94,59 @@ async def sign_in(code):
         st.session_state.auth_msg = "Giris basarili! Artik sorgu yapabilirsiniz."
     except Exception as e:
         st.session_state.auth_msg = f"Giris Hatasi: {str(e)}"
+    finally:
+        await client.disconnect()
 
 async def get_derinlik(ticker):
     client = get_client(st.session_state.api_id, st.session_state.api_hash)
     await client.connect()
-    if not await client.is_user_authorized():
-        return {"error": "Lutfen once giris yapin."}
+    try:
+        if not await client.is_user_authorized():
+            return {"error": "Lutfen once giris yapin."}
 
-    target_bot = "@borsabilgibot"
-    command = f"/derinlik {ticker.upper()}"
-    
-    # Send message
-    await client.send_message(target_bot, command)
-    
-    # Wait for response (timeout 15 sec)
-    response_msg = None
-    media_path = None
-    start_time = time.time()
-    
-    # Basic polling loops
-    while time.time() - start_time < 15:
-        # Get last 2 messages from bot
-        messages = await client.get_messages(target_bot, limit=2)
-        for msg in messages:
-            # Check if this message was sent by the bot recently
-            if not msg.out:
-                response_msg = msg.text
-                if msg.media:
-                    file_loc = os.path.join(parent_dir, f"tmp_derinlik_{ticker}.jpg")
-                    media_path = await client.download_media(msg, file=file_loc)
+        target_bot = "@borsabilgibot"
+        command = f"/derinlik {ticker.upper()}"
+        
+        # Send message
+        await client.send_message(target_bot, command)
+        
+        # Wait for response (timeout 15 sec)
+        response_msg = None
+        media_path = None
+        start_time = time.time()
+        
+        # Basic polling loops
+        while time.time() - start_time < 15:
+            # Get last 2 messages from bot
+            messages = await client.get_messages(target_bot, limit=2)
+            for msg in messages:
+                # Check if this message was sent by the bot recently
+                if not msg.out:
+                    response_msg = msg.text
+                    if msg.media:
+                        file_loc = os.path.join(parent_dir, f"tmp_derinlik_{ticker}.jpg")
+                        media_path = await client.download_media(msg, file=file_loc)
+                    break
+                    
+            if response_msg or media_path:
                 break
                 
-        if response_msg or media_path:
-            break
+            await asyncio.sleep(1)
             
-        await asyncio.sleep(1)
-        
-    if not response_msg and not media_path:
-        return {"error": "Bottan 15 saniye icinde yanit gelmedi veya sunucu yogun."}
-        
-    return {"text": response_msg, "media": media_path}
+        if not response_msg and not media_path:
+            return {"error": "Bottan 15 saniye icinde yanit gelmedi veya sunucu yogun."}
+            
+        return {"text": response_msg, "media": media_path}
+    finally:
+        await client.disconnect()
+
+async def log_out_client():
+    client = get_client(st.session_state.api_id, st.session_state.api_hash)
+    await client.connect()
+    try:
+        await client.log_out()
+    finally:
+        await client.disconnect()
 
 # == UI Logics ==
 loop = asyncio.new_event_loop()
@@ -213,8 +228,7 @@ else:
     
     # Oturumu kapat butonu
     if st.button("❌ Oturumu Kapat", type="secondary"):
-        client = get_client(st.session_state.api_id, st.session_state.api_hash)
-        loop.run_until_complete(client.log_out())
+        loop.run_until_complete(log_out_client())
         st.session_state.is_authorized = False
         st.session_state.api_id = ""
         st.session_state.api_hash = ""
