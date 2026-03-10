@@ -4,11 +4,8 @@ Derinlik (AKD) Modulu
 """
 import streamlit as st
 import asyncio
-import nest_asyncio
 import os
 import time
-
-nest_asyncio.apply()
 
 # Tema entegrasyonu
 import sys
@@ -60,6 +57,27 @@ def get_client(api_id, api_hash):
     safe_hash = api_hash if hasattr(api_hash, 'strip') and api_hash.strip() else "dummy_hash"
     
     return TelegramClient(SESSION_FILE, api_id_int, safe_hash)
+
+# Asyncio Synchronous Execution Wrapper
+def run_async(coro):
+    """
+    Safely runs an async coroutine in a new event loop and returns the result.
+    This prevents RuntimeError: Timeout should be used inside a task
+    which occurs when using loop.run_until_complete() directly with nest_asyncio in python 3.14+
+    """
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        
+    if loop.is_running():
+        # Fallback for environments where loop is already running (should not happen often in st)
+        import nest_asyncio
+        nest_asyncio.apply()
+        return loop.run_until_complete(coro)
+    else:
+        return asyncio.run(coro)
 
 async def check_auth():
     if not (st.session_state.api_id and st.session_state.api_hash):
@@ -149,8 +167,6 @@ async def log_out_client():
         await client.disconnect()
 
 # == UI Logics ==
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
 
 # 1. Login State check
 has_valid_creds = bool(st.session_state.api_id and str(st.session_state.api_id).strip() and 
@@ -158,7 +174,7 @@ has_valid_creds = bool(st.session_state.api_id and str(st.session_state.api_id).
 
 if has_valid_creds:
     try:
-        is_auth = loop.run_until_complete(check_auth())
+        is_auth = run_async(check_auth())
         st.session_state.is_authorized = is_auth
     except Exception as e:
         st.session_state.is_authorized = False
@@ -181,7 +197,7 @@ if not st.session_state.is_authorized:
                 st.session_state.api_id = api_id
                 st.session_state.api_hash = api_hash
                 st.session_state.phone = phone
-                loop.run_until_complete(send_code())
+                run_async(send_code())
                 st.rerun()
             else:
                 st.error("Lutfen tum alanlari doldurun.")
@@ -195,7 +211,7 @@ if not st.session_state.is_authorized:
             code = st.text_input("Telegramdan veya SMS'ten gelen 5 haneli kod")
             code_btn = st.form_submit_button("Giris Yap", type="primary")
             if code_btn and code:
-                loop.run_until_complete(sign_in(code))
+                run_async(sign_in(code))
                 st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -212,7 +228,7 @@ else:
         
     if search_btn and ticker:
         with st.spinner(f"{ticker} derinlik tablosu Telegramdan cekiiliyor... Lutfen bekleyin (Maks 15sn)"):
-            result = loop.run_until_complete(get_derinlik(ticker))
+            result = run_async(get_derinlik(ticker))
             
             if "error" in result:
                 st.error(result["error"])
@@ -228,7 +244,7 @@ else:
     
     # Oturumu kapat butonu
     if st.button("❌ Oturumu Kapat", type="secondary"):
-        loop.run_until_complete(log_out_client())
+        run_async(log_out_client())
         st.session_state.is_authorized = False
         st.session_state.api_id = ""
         st.session_state.api_hash = ""
