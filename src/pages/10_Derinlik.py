@@ -65,8 +65,15 @@ import concurrent.futures
 def _run_in_new_loop(coro):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+    
+    async def task_wrapper():
+        # nest_asyncio overrides loop.run_until_complete globally and drops the asyncio.Task context.
+        # Python 3.14+ timeout requires a task context. We wrap the user coro in an explicit task here.
+        task = loop.create_task(coro)
+        return await task
+        
     try:
-        return loop.run_until_complete(coro)
+        return loop.run_until_complete(task_wrapper())
     finally:
         loop.close()
 
