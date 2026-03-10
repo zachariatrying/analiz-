@@ -5,6 +5,10 @@ Alarm ve tarama sonuclarini Telegram uzerinden gonder.
 import streamlit as st
 import requests
 import json
+try:
+    from src.telegram_utils import send_telegram_alert
+except ImportError:
+    from telegram_utils import send_telegram_alert
 
 st.set_page_config(page_title="Telegram", page_icon="", layout="wide")
 
@@ -55,19 +59,7 @@ except:
 if 'watchlist' not in st.session_state:
     st.session_state.watchlist = load_watchlist()
 
-def send_telegram(token, chat_id, message):
-    """Telegram Bot API ile mesaj gonder."""
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "HTML",
-    }
-    try:
-        resp = requests.post(url, json=payload, timeout=10)
-        return resp.status_code == 200, resp.json()
-    except Exception as e:
-        return False, str(e)
+# Removed local send_telegram function in favor of src.telegram_utils.send_telegram_alert
 
 st.markdown("""
 <div style="text-align:center; padding:10px 0 24px 0;">
@@ -123,15 +115,17 @@ if st.button("AYARLARI KAYDET"):
     st.success("Tebrikler! Telegram ayarlariniz cihazinizda basariyla kaydedildi. Artık sayfa yenilense de gitmeyecek.")
 
 # Test Butonu
-if st.button("BAGLANTI TESTI", type="primary", use_container_width=True):
-    if not tg_token or not tg_chat:
-        st.error("Token ve Chat ID gerekli.")
-    else:
-        ok, resp = send_telegram(tg_token, tg_chat, "BIST Teknik Analiz baglanti testi basarili.")
-        if ok:
-            st.success("Telegram mesaji gonderildi. Telegram uygulamanizi kontrol edin.")
+    if st.button("BAGLANTI TESTI", type="primary", use_container_width=True):
+        if not tg_token or not tg_chat:
+            st.error("Token ve Chat ID gerekli.")
         else:
-            st.error(f"Gonderilemedi: {resp}")
+            # We temporarily save to session state for the test
+            save_tg_config(tg_token, tg_chat)
+            ok, resp = send_telegram_alert("BIST Teknik Analiz bağlantı testi başarılı.")
+            if ok:
+                st.success("Telegram mesajı gönderildi. Telegram uygulamanızı kontrol edin.")
+            else:
+                st.error(f"Gönderilemedi: {resp}")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -163,7 +157,7 @@ else:
                 msg += "\n"
             msg += f"\nToplam: {alarm_count} alarm"
 
-            ok, resp = send_telegram(tg_token, tg_chat, msg)
+            ok, resp = send_telegram_alert(msg)
             if ok:
                 st.success("Alarm listesi Telegram'a gonderildi.")
             else:
@@ -176,17 +170,17 @@ st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 st.markdown("### Ozel Mesaj Gonder")
 
 custom_msg = st.text_area("Mesaj", placeholder="Buraya ozel mesajinizi yazin...", height=80)
-if st.button("MESAJI GONDER", use_container_width=True):
-    if not tg_token or not tg_chat:
-        st.error("Once token ve chat ID giriniz.")
-    elif not custom_msg.strip():
-        st.error("Mesaj bos olamaz.")
-    else:
-        ok, resp = send_telegram(tg_token, tg_chat, custom_msg)
-        if ok:
-            st.success("Mesaj gonderildi.")
+    if st.button("MESAJI GONDER", use_container_width=True):
+        if not tg_token or not tg_chat:
+            st.error("Once token ve chat ID giriniz.")
+        elif not custom_msg.strip():
+            st.error("Mesaj bos olamaz.")
         else:
-            st.error(f"Gonderilemedi: {resp}")
+            ok, resp = send_telegram_alert(custom_msg)
+            if ok:
+                st.success("Mesaj gonderildi.")
+            else:
+                st.error(f"Gonderilemedi: {resp}")
 
 st.markdown('</div>', unsafe_allow_html=True)
 

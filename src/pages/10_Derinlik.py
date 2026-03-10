@@ -10,6 +10,10 @@ import pandas as pd
 import yfinance as yf
 import re
 from datetime import datetime
+try:
+    from src.telegram_utils import send_telegram_alert
+except ImportError:
+    from telegram_utils import send_telegram_alert
 
 # Tema entegrasyonu
 import sys
@@ -41,6 +45,7 @@ if 'client' not in st.session_state: st.session_state.client = None
 if 'taban_data' not in st.session_state: st.session_state.taban_data = {}
 if 'taban_last_update' not in st.session_state: st.session_state.taban_last_update = None
 if 'monitoring_active' not in st.session_state: st.session_state.monitoring_active = False
+if 'tg_alerts_enabled' not in st.session_state: st.session_state.tg_alerts_enabled = False
 
 BIST100_TICKERS = [
     "AEFES", "AGHOL", "AKBNK", "AKCNS", "AKSA", "AKSEN", "ALARK", "ALBRK", "ALFAS", "ARCLK", "ASELS", "ASTOR", "ASUZU",
@@ -359,6 +364,7 @@ else:
         
         with col_ctrl2:
             interval = st.select_slider("Kontrol Aralığı (Dakika)", options=[1, 2, 5, 10, 15], value=5)
+            st.session_state.tg_alerts_enabled = st.checkbox("Telegram Bildirimleri Gönder", value=st.session_state.tg_alerts_enabled)
 
         if st.session_state.monitoring_active:
             status_placeholder = st.empty()
@@ -379,11 +385,19 @@ else:
                         
                         lot_count = parse_lot_from_text(res.get("text", ""))
                         
+                        # Notification for new floor stock
+                        if t not in st.session_state.taban_data and st.session_state.tg_alerts_enabled:
+                            send_telegram_alert(f"🚨 <b>YENİ TABAN HİSSE: {t}</b>\nFiyat: {stock['price']}\nDeğişim: %{stock['change']:.2f}")
+
                         # Compare with previous
                         prev_lot = st.session_state.taban_data.get(t, {}).get("lot", 0)
                         diff = 0
                         if prev_lot > 0 and lot_count is not None:
                             diff = lot_count - prev_lot
+                            
+                            # Notification for lot erosion (if decreased by more than 5%)
+                            if diff < 0 and abs(diff) > (prev_lot * 0.05) and st.session_state.tg_alerts_enabled:
+                                send_telegram_alert(f"🔥 <b>TABAN ERİMESİ: {t}</b>\nLotlar <b>{abs(diff):,}</b> adet azaldı!\nKalan Lot: <b>{lot_count:,}</b>\n<i>Hisse toplanıyor olabilir.</i>")
                             
                         st.session_state.taban_data[t] = {
                             "price": stock['price'],
