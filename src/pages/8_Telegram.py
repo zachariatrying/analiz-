@@ -149,19 +149,67 @@ else:
         if not tg_token or not tg_chat:
             st.error("Once token ve chat ID giriniz.")
         else:
-            msg = "<b>BIST Teknik Analiz - Alarm Listesi</b>\n\n"
-            for i, alarm in enumerate(st.session_state.watchlist, 1):
-                msg += f"{i}. <b>{alarm['hisse']}</b> | Hedef: <b>{alarm['hedef']:.2f}</b>"
-                if 'stop' in alarm and alarm['stop'] > 0:
-                    msg += f" | Stop: <b>{alarm['stop']:.2f}</b>"
-                msg += "\n"
-            msg += f"\nToplam: {alarm_count} alarm"
+            with st.spinner("Güncel fiyatlar çekiliyor ve mesaj hazırlanıyor..."):
+                import yfinance as yf
+                import pandas as pd
+                
+                tickers = list(set([a['hisse'] for a in st.session_state.watchlist]))
+                symbols = [f"{t}.IS" for t in tickers]
+                
+                prices = {}
+                try:
+                    if len(symbols) == 1:
+                        data = yf.download(symbols[0], period="2d", progress=False)
+                        if isinstance(data.columns, pd.MultiIndex):
+                            data.columns = data.columns.get_level_values(0)
+                        prices[tickers[0]] = float(data['Close'].dropna().iloc[-1])
+                    else:
+                        data = yf.download(symbols, period="2d", progress=False, group_by='ticker')
+                        for ticker, symbol in zip(tickers, symbols):
+                            try:
+                                df = data[symbol]
+                                prices[ticker] = float(df['Close'].dropna().iloc[-1])
+                            except: pass
+                except Exception as e:
+                    st.warning(f"Bazı fiyatlar alınamadı: {e}")
 
-            ok, resp = send_telegram_alert(msg)
-            if ok:
-                st.success("Alarm listesi Telegram'a gonderildi.")
-            else:
-                st.error(f"Gonderilemedi: {resp}")
+                msg = "<b>🎯 BIST Takip Listesi & Alarmlar</b>\n"
+                msg += f"<i>Tarih: {os.popen('date /t').read().strip()} {os.popen('time /t').read().strip()}</i>\n\n"
+                
+                for i, alarm in enumerate(st.session_state.watchlist, 1):
+                    h = alarm['hisse']
+                    hedef = alarm['hedef']
+                    stop = alarm.get('stop', 0)
+                    giris = alarm.get('giris', 0)
+                    current = prices.get(h, 0)
+                    
+                    # Durum belirleme
+                    status_icon = "⏳"
+                    if current >= hedef and hedef > 0:
+                        status_icon = "✅"
+                    elif stop > 0 and current <= stop:
+                        status_icon = "❌"
+                    
+                    perf_str = ""
+                    if giris > 0 and current > 0:
+                        perf = ((current - giris) / giris) * 100
+                        emoji = "📈" if perf >= 0 else "📉"
+                        perf_str = f" | {emoji} <b>%{perf:.2f}</b>"
+
+                    msg += f"{i}. {status_icon} <b>#{h}</b>\n"
+                    msg += f"   💰 Fiyat: <b>{current:.2f}</b>{perf_str}\n"
+                    msg += f"   🎯 Hedef: {hedef:.2f}"
+                    if stop > 0:
+                        msg += f" | 🛑 Stop: {stop:.2f}"
+                    msg += "\n\n"
+                
+                msg += f"🚀 <b>Toplam {alarm_count} Takip</b>"
+
+                ok, resp = send_telegram_alert(msg)
+                if ok:
+                    st.success("Detaylı takip listesi Telegram'a gönderildi.")
+                else:
+                    st.error(f"Gonderilemedi: {resp}")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
