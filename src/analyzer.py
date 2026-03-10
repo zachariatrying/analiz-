@@ -1635,8 +1635,9 @@ class Analyzer:
                         patterns.append(p)
             
             # 5. RSI Divergence
-            div_pats = self.detect_rsi_divergence(df, zz_points, timeframe)
-            patterns.extend(div_pats)
+            if self.config['enabled_patterns'].get('rsi_div', False):
+                div_pats = self.detect_rsi_divergence(df, zz_points, timeframe)
+                patterns.extend(div_pats)
             
         except Exception as e:
             print(f"Error in pattern detection: {e}")
