@@ -32,6 +32,7 @@ if 'phone' not in st.session_state: st.session_state.phone = ""
 if 'auth_msg' not in st.session_state: st.session_state.auth_msg = ""
 if 'is_authorized' not in st.session_state: st.session_state.is_authorized = False
 if 'awaiting_code' not in st.session_state: st.session_state.awaiting_code = False
+if 'phone_code_hash' not in st.session_state: st.session_state.phone_code_hash = ""
 if 'client' not in st.session_state: st.session_state.client = None
 
 st.markdown("""
@@ -87,19 +88,19 @@ async def send_code(api_id, api_hash, phone):
     await client.connect()
     try:
         if not await client.is_user_authorized():
-            await client.send_code_request(phone)
-            return {"status": "success", "msg": "Dogrulama kodu SMS veya Telegram'dan gonderildi."}
+            sent_code = await client.send_code_request(phone)
+            return {"status": "success", "msg": "Dogrulama kodu SMS veya Telegram'dan gonderildi.", "phone_code_hash": getattr(sent_code, "phone_code_hash", "")}
         return {"status": "already_auth", "msg": "Zaten giris yapilmis."}
     except Exception as e:
         return {"status": "error", "msg": f"Hata: {str(e)}"}
     finally:
         await client.disconnect()
 
-async def sign_in(api_id, api_hash, phone, code):
+async def sign_in(api_id, api_hash, phone, code, phone_code_hash):
     client = get_client(api_id, api_hash)
     await client.connect()
     try:
-        await client.sign_in(phone, code)
+        await client.sign_in(phone, code, phone_code_hash=phone_code_hash)
         return {"status": "success", "msg": "Giris basarili! Artik sorgu yapabilirsiniz."}
     except Exception as e:
         return {"status": "error", "msg": f"Giris Hatasi: {str(e)}"}
@@ -190,8 +191,12 @@ if not st.session_state.is_authorized:
                 st.session_state.phone = phone
                 res = run_async(send_code(api_id, api_hash, phone))
                 
-                if res["status"] in ["success", "already_auth"]:
+                if res["status"] in ["success"]:
                     st.session_state.awaiting_code = True
+                    st.session_state.phone_code_hash = res.get("phone_code_hash", "")
+                elif res["status"] == "already_auth":
+                    st.session_state.awaiting_code = False
+                    st.session_state.is_authorized = True
                 
                 st.session_state.auth_msg = res["msg"]
                 st.rerun()
@@ -207,7 +212,7 @@ if not st.session_state.is_authorized:
             code = st.text_input("Telegramdan veya SMS'ten gelen 5 haneli kod")
             code_btn = st.form_submit_button("Giris Yap", type="primary")
             if code_btn and code:
-                res = run_async(sign_in(st.session_state.api_id, st.session_state.api_hash, st.session_state.phone, code))
+                res = run_async(sign_in(st.session_state.api_id, st.session_state.api_hash, st.session_state.phone, code, st.session_state.phone_code_hash))
                 if res["status"] == "success":
                     st.session_state.is_authorized = True
                     st.session_state.awaiting_code = False
@@ -250,5 +255,6 @@ else:
         st.session_state.api_id = ""
         st.session_state.api_hash = ""
         st.session_state.phone = ""
+        st.session_state.phone_code_hash = ""
         st.session_state.client = None
         st.rerun()
