@@ -263,7 +263,7 @@ if btn_test:
             fig.update_layout(
                 paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
                 height=350, margin=dict(l=10, r=10, t=10, b=10),
-                yaxis=dict(gridcolor='rgba(128,128,128,0.08)', title='Performans %', titlefont=dict(color='#94a3b8')),
+                yaxis=dict(gridcolor='rgba(128,128,128,0.08)', title=dict(text='Performans %', font=dict(color='#94a3b8'))),
                 xaxis=dict(gridcolor='rgba(128,128,128,0.08)'),
                 font=dict(color='#94a3b8'),
             )
