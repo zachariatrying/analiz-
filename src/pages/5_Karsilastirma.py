@@ -11,7 +11,17 @@ from plotly.subplots import make_subplots
 
 st.set_page_config(page_title="Karsilastirma", page_icon="", layout="wide")
 
-from src.theme import CSS_STYLE
+import sys
+import os
+curr_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(curr_dir)
+if curr_dir not in sys.path: sys.path.append(curr_dir)
+if parent_dir not in sys.path: sys.path.append(parent_dir)
+try:
+    from src.theme import CSS_STYLE
+except ImportError:
+    from theme import CSS_STYLE
+
 st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
 @st.cache_data(ttl=300)
