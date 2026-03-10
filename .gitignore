@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.*
+
+# Cache
+market_data_cache/
+*.cache
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Debug
+*.log
+debug_*.txt
+flag_debug_*.txt
+*_out.txt
+*_log.txt
+
+# Data files (generated)
+*.csv
+!tarama_sonuclari.csv
+
+# Temporary
+tmp/
+temp/

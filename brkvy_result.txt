@@ -1,0 +1,15 @@
+Found 2 patterns.
+
+--- PATTERN FOUND ---
+Name: Fincan Kulp (UNCONFIRMED)
+Score: 80
+Desc: Derinlik: %38.1. Kulp: %32 Retracement. 
+Points: {'p_start_idx': 467, 'p_start_val': 139.0, 'p_end_idx': 495, 'p_end_val': 127.4, 'f_end_idx': 498, 'res_start': 127.4, 'res_end': 127.4, 'sup_start': 78.85, 'sup_end': 78.85}
+Target: 175.95000000000002
+
+--- PATTERN FOUND ---
+Name: Boğa Bayrak
+Score: 105
+Desc: Direk: %62.4. Derinlik: %21. CONFIRMED
+Points: {'p_start_idx': 442, 'p_start_val': 77.75, 'p_end_idx': 473, 'p_end_val': 126.3, 'f_end_idx': 499, 'res_start': 107.67989417989416, 'res_end': 114.97195767195765, 'sup_start': 100.96878306878307, 'sup_end': 107.905291005291}
+Target: 163.52195767195764

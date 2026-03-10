@@ -1,0 +1,4 @@
+FAIL: Upward handle detected as Cup!
+Pattern Points: [90, 239, 240]
+Desc: Derinlik: %31.6. Kulp: %41 Retracement. 
+Score: 80
