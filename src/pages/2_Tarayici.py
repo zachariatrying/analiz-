@@ -335,9 +335,17 @@ with st.sidebar:
     st.markdown("##### Filtreler")
     only_confirmed = st.checkbox("Sadece Onaylanmis (Confirmed)", value=False, help="Henuz olusum asamasinda olan (Unconfirmed) formasyonlari gizler.")
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+try:
+    from src.watchlist_manager import load_watchlist, save_watchlist
+except:
+    from watchlist_manager import load_watchlist, save_watchlist
+
 # Init session state
 if 'watchlist' not in st.session_state:
-    st.session_state.watchlist = []
+    st.session_state.watchlist = load_watchlist()
 if 'scan_results' not in st.session_state:
     st.session_state.scan_results = []
 if 'scan_params' not in st.session_state:
@@ -422,6 +430,7 @@ else:
                             'giris': veri['Fiyat']
                         }
                         st.session_state.watchlist.append(new_alarm)
+                        save_watchlist(st.session_state.watchlist)
                         st.success(f"{veri['Hisse']} alarma eklendi (Hedef: {veri['Hedef']:.2f}, Stop: {veri.get('Stop', 0.0):.2f})")
                 with alarm_col2:
                     st.caption(f"Hedef {veri['Hedef']:.2f} ve Stop {veri.get('Stop', 0.0):.2f} degerleri ile listeye duser.")
@@ -442,6 +451,8 @@ else:
                             'giris': v['Fiyat']
                         })
                         added += 1
+                if added > 0:
+                    save_watchlist(st.session_state.watchlist)
                 st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
         with col_info:
             st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")

@@ -47,3 +47,8 @@ flag_debug_*.txt
 tmp/
 temp/
 
+# User Data
+watchlist.json
+src/watchlist.json
+telegram_config.json
+src/telegram_config.json

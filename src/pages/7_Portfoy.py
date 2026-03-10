@@ -293,7 +293,18 @@ with tab_portfoy:
 
 
 with tab_takip:
-    if 'watchlist' not in st.session_state or len(st.session_state.watchlist) == 0:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    try:
+        from src.watchlist_manager import load_watchlist, save_watchlist
+    except:
+        from watchlist_manager import load_watchlist, save_watchlist
+
+    if 'watchlist' not in st.session_state:
+        st.session_state.watchlist = load_watchlist()
+
+    if len(st.session_state.watchlist) == 0:
         st.info("Henüz alarma eklenmis bir hisse yok. Tarayici sayfasindan tespit edilen formasyonlari alarma ekleyebilirsiniz.")
     else:
         st.markdown("### Takip Listem (Alarmlar)")
@@ -380,5 +391,6 @@ with tab_takip:
             with col1:
                 if st.button("Tum Alarmlari Temizle"):
                     st.session_state.watchlist = []
+                    save_watchlist([])
                     st.rerun()
 

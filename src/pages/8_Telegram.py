@@ -69,8 +69,16 @@ if 'tg_token' not in st.session_state:
     st.session_state.tg_token = config.get("token", "")
 if 'tg_chat_id' not in st.session_state:
     st.session_state.tg_chat_id = config.get("chat_id", "")
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+try:
+    from src.watchlist_manager import load_watchlist
+except:
+    from watchlist_manager import load_watchlist
+
 if 'watchlist' not in st.session_state:
-    st.session_state.watchlist = []
+    st.session_state.watchlist = load_watchlist()
 
 def send_telegram(token, chat_id, message):
     """Telegram Bot API ile mesaj gonder."""

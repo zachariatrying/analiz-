@@ -68,9 +68,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+try:
+    from src.watchlist_manager import load_watchlist, save_watchlist
+except:
+    from watchlist_manager import load_watchlist, save_watchlist
+
 # Session state for watchlist
 if 'watchlist' not in st.session_state:
-    st.session_state.watchlist = []
+    st.session_state.watchlist = load_watchlist()
 
 st.markdown("""
 <div style="text-align:center; padding:10px 0 24px 0;">
@@ -105,6 +113,7 @@ with col_add4:
             'hedef': alarm_fiyat,
         }
         st.session_state.watchlist.append(new_alarm)
+        save_watchlist(st.session_state.watchlist)
         st.success(f"{new_alarm['hisse']} alarmi eklendi.")
         st.rerun()
 
@@ -130,6 +139,7 @@ if st.button("Toplu Ekle"):
             except:
                 pass
     if added > 0:
+        save_watchlist(st.session_state.watchlist)
         st.success(f"{added} alarm eklendi.")
         st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
@@ -144,6 +154,7 @@ if st.session_state.watchlist:
     with col_temizle:
         if st.button("Tum Alarmlari Temizle"):
             st.session_state.watchlist = []
+            save_watchlist([])
             st.rerun()
 
     btn_kontrol = st.button("ALARMLARI KONTROL ET", type="primary", use_container_width=True)
