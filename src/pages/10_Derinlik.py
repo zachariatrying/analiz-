@@ -121,7 +121,7 @@ async def get_derinlik(api_id, api_hash, ticker):
         await client.send_message(target_bot, command)
         
         # Wait for response (timeout 30 sec for two-step interaction)
-        response_msg = None
+        response_msg = ""
         media_path = None
         start_time = time.time()
         clicked_button = False
@@ -133,31 +133,39 @@ async def get_derinlik(api_id, api_hash, ticker):
             
             for msg in messages:
                 if not msg.out:
+                    # Capture text unconditionally
+                    current_text = msg.text or ""
+                    
                     # If message has an image, download it and we are done
                     if msg.media:
                         file_loc = os.path.join(parent_dir, f"tmp_derinlik_{ticker}.jpg")
                         media_path = await client.download_media(msg, file=file_loc)
-                        response_msg = msg.text or "Derinlik grafiği başarıyla çekildi."
+                        response_msg = current_text or "Derinlik grafiği başarıyla çekildi."
                         break
                         
                     # If no image yet, but the message has inline buttons and we haven't clicked one yet
                     if not clicked_button and hasattr(msg, 'buttons') and msg.buttons:
+                        available_buttons = []
                         for row in msg.buttons:
                             for button in row:
-                                btn_text = button.text.lower()
-                                # Check if button matches our target action
-                                if any(kw in btn_text for kw in ["derinlik", "görüntü", "goruntu", "al"]):
-                                    await button.click()
-                                    clicked_button = True
-                                    # Reset timeout since we just requested the image
-                                    start_time = time.time()
-                                    break
-                            if clicked_button:
-                                break
-                    
-                    # If it's just text without buttons and no media yet, store it but keep waiting
-                    if not msg.media and not hasattr(msg, 'buttons'):
-                        response_msg = msg.text
+                                if button.text:
+                                    available_buttons.append(button.text)
+                                    btn_text = button.text.lower()
+                                    # Check if button matches our target action
+                                    if any(kw in btn_text for kw in ["derinlik", "görüntü", "goruntu", "al", "sorgula"]):
+                                        try:
+                                            await button.click()
+                                            clicked_button = True
+                                            # Reset timeout since we just requested the image
+                                            start_time = time.time()
+                                        except Exception:
+                                            pass
+                        
+                        # Add buttons to debug text
+                        if available_buttons:
+                            current_text += f"\n\n[Mevcut Butonlar: {', '.join(available_buttons)}]"
+                            
+                    response_msg = current_text
 
             if media_path:
                 break
@@ -166,8 +174,8 @@ async def get_derinlik(api_id, api_hash, ticker):
             
         if not media_path:
             if response_msg:
-                return {"error": f"Bot resim göndermedi. Son gelen mesaj:\n{response_msg}"}
-            return {"error": "Bottan 30 saniye icinde yanit gelmedi veya sunucu yogun."}
+                return {"error": f"Bot resim göndermedi. Son durum:\n{response_msg}"}
+            return {"error": "Bottan 30 saniye icinde hicbir yanit gelmedi."}
             
         return {"text": response_msg, "media": media_path}
     finally:
