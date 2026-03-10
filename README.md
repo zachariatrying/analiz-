@@ -23,12 +23,15 @@ Uygulama, **ZigZag algoritması**, **geometrik doğrulama** ve **hacim profili a
 ## ✨ Temel Özellikler
 
 - **Gelişmiş Tarayıcı (Scanner)**: BIST hisselerinde TOBO, OBO, Fincan-Kulp, Boğa Bayrak, Flama, RSI Uyumsuzlukları ve Mum Formasyonlarını tespit eder.
+- **Taban Avcısı (Floor Hunter)**: Piyasadaki %10 taban olmuş hisseleri otomatik tespit eder.
+- **Hibrit Derinlik Analizi**: `@borsabilgibot` üzerinden Telegram UserBot yardımıyla gerçek zamanlı lot ve derinlik verisi çeker.
+- **Lot Erimesi Takibi**: Tabandaki lotlardaki azalmaları (erime) analiz ederek potansiyel dönüş sinyalleri üretir.
 - **Premium Dashboard**: Cam efekti (glassmorphism) ve modern koyu tema ile şık bir kullanıcı deneyimi.
 - **Modüler Yapı**: Kod tabanı Dashboard, Tarayıcı, Haberler, Portföy Takip, Backtesting gibi çok sayfalık (Multi-page) Streamlit yapısına taşınmıştır.
 - **Akıllı Backtesting**: Geçmiş formasyonların başarı oranlarını hesaplar. Seçilen formasyonlar için "Hedefe Ulaştı" veya "Stop Oldu" istatistiklerini raporlar.
 - **Portföy Yönetimi**: Kendi portföyünüzü ekleyip, hisselerinizin maliyet ve kâr/zarar durumunu canlı olarak grafiklerle takip edebilirsiniz.
 - **Canlı Piyasa Haberleri**: Seçili hisselere veya genel BIST piyasasına ait finansal haberleri otomatik çeker ve pozitif/negatif duygu analizi (Sentiment Analysis) yapar.
-- **Telegram Entegrasyonu**: Özel alarmlarınızı veya tarama sonuçlarınızı anlık olarak Telegram botunuz üzerinden telefonunuza gönderir. (Ayarlar kalıcı olarak kaydedilir).
+- **Telegram Entegrasyonu**: Özel alarmlarınızı, tarama sonuçlarınızı ve **Taban Lot** uyarılarını detaylı (canlı fiyatlı) mesajlarla telefonunuza gönderir.
 
 ## 🚀 Kurulum
 
@@ -80,7 +83,8 @@ analiz/
 │       ├── 6_Backtesting.py         # Geçmiş formasyonların performans testi
 │       ├── 7_Portfoy.py             # Portföy ve kâr/zarar takibi
 │       ├── 8_Telegram.py            # Telegram bot bildirim ayarları
-│       └── 9_Haberler.py            # Haber akışı ve yapay zeka duygu analizi
+│       ├── 9_Haberler.py            # Haber akışı ve yapay zeka duygu analizi
+│       └── 10_Derinlik.py           # Hibrit Taban Avcısı ve Telegram Derinlik Analizi
 ├── requirements.txt
 └── README.md
 ```
