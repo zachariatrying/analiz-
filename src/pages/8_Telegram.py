@@ -115,17 +115,17 @@ if st.button("AYARLARI KAYDET"):
     st.success("Tebrikler! Telegram ayarlariniz cihazinizda basariyla kaydedildi. Artık sayfa yenilense de gitmeyecek.")
 
 # Test Butonu
-    if st.button("BAGLANTI TESTI", type="primary", use_container_width=True):
-        if not tg_token or not tg_chat:
-            st.error("Token ve Chat ID gerekli.")
+if st.button("BAGLANTI TESTI", type="primary", use_container_width=True):
+    if not tg_token or not tg_chat:
+        st.error("Token ve Chat ID gerekli.")
+    else:
+        # We temporarily save to session state for the test
+        save_tg_config(tg_token, tg_chat)
+        ok, resp = send_telegram_alert("BIST Teknik Analiz bağlantı testi başarılı.")
+        if ok:
+            st.success("Telegram mesajı gönderildi. Telegram uygulamanızı kontrol edin.")
         else:
-            # We temporarily save to session state for the test
-            save_tg_config(tg_token, tg_chat)
-            ok, resp = send_telegram_alert("BIST Teknik Analiz bağlantı testi başarılı.")
-            if ok:
-                st.success("Telegram mesajı gönderildi. Telegram uygulamanızı kontrol edin.")
-            else:
-                st.error(f"Gönderilemedi: {resp}")
+            st.error(f"Gönderilemedi: {resp}")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -170,17 +170,17 @@ st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 st.markdown("### Ozel Mesaj Gonder")
 
 custom_msg = st.text_area("Mesaj", placeholder="Buraya ozel mesajinizi yazin...", height=80)
-    if st.button("MESAJI GONDER", use_container_width=True):
-        if not tg_token or not tg_chat:
-            st.error("Once token ve chat ID giriniz.")
-        elif not custom_msg.strip():
-            st.error("Mesaj bos olamaz.")
+if st.button("MESAJI GONDER", use_container_width=True):
+    if not tg_token or not tg_chat:
+        st.error("Once token ve chat ID giriniz.")
+    elif not custom_msg.strip():
+        st.error("Mesaj bos olamaz.")
+    else:
+        ok, resp = send_telegram_alert(custom_msg)
+        if ok:
+            st.success("Mesaj gonderildi.")
         else:
-            ok, resp = send_telegram_alert(custom_msg)
-            if ok:
-                st.success("Mesaj gonderildi.")
-            else:
-                st.error(f"Gonderilemedi: {resp}")
+            st.error(f"Gonderilemedi: {resp}")
 
 st.markdown('</div>', unsafe_allow_html=True)
 
