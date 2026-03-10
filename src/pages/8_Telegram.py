@@ -8,43 +8,8 @@ import json
 
 st.set_page_config(page_title="Telegram", page_icon="", layout="wide")
 
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    .stApp { font-family: 'Inter', sans-serif; }
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 40%, #16213e 100%);
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f0c29 0%, #1a1a2e 100%);
-        border-right: 1px solid rgba(255,255,255,0.08);
-    }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 24px; margin-bottom: 16px;
-    }
-    .glass-card:hover {
-        border-color: rgba(99, 102, 241, 0.4);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
-    }
-    .step-card {
-        background: rgba(99,102,241,0.06);
-        border-radius: 12px; border: 1px solid rgba(99,102,241,0.15);
-        padding: 16px; margin-bottom: 12px;
-    }
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
-        border: none !important; border-radius: 12px !important; font-weight: 600 !important;
-    }
-    hr { border-color: rgba(255,255,255,0.06) !important; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 3px; }
-</style>
-""", unsafe_allow_html=True)
+from src.theme import CSS_STYLE
+st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
 import os
 

@@ -12,56 +12,8 @@ from datetime import datetime, timedelta
 
 st.set_page_config(page_title="Dashboard", page_icon="", layout="wide")
 
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    .stApp { font-family: 'Inter', sans-serif; }
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 40%, #16213e 100%);
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f0c29 0%, #1a1a2e 100%);
-        border-right: 1px solid rgba(255,255,255,0.08);
-    }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 24px; margin-bottom: 16px;
-        transition: all 0.3s ease;
-    }
-    .glass-card:hover {
-        border-color: rgba(99, 102, 241, 0.4);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
-    }
-    .metric-card {
-        background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(168,85,247,0.08) 100%);
-        border-radius: 14px;
-        border: 1px solid rgba(99,102,241,0.15);
-        padding: 20px; text-align: center;
-        transition: all 0.3s ease;
-    }
-    .metric-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,0.2); }
-    .metric-value {
-        font-size: 1.8rem; font-weight: 700;
-        background: linear-gradient(135deg, #818cf8, #c084fc);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .metric-label {
-        font-size: 0.75rem; color: #94a3b8;
-        text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600;
-    }
-    .metric-delta-up { color: #4ade80; font-weight: 600; font-size: 0.9rem; }
-    .metric-delta-down { color: #f87171; font-weight: 600; font-size: 0.9rem; }
-    div[data-testid="stMetricValue"] { color: #818cf8; font-family: 'Inter', monospace; font-weight: 700; }
-    .stProgress > div > div { background: linear-gradient(90deg, #6366f1, #a78bfa, #c084fc) !important; border-radius: 8px; }
-    hr { border-color: rgba(255,255,255,0.06) !important; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 3px; }
-</style>
-""", unsafe_allow_html=True)
+from src.theme import CSS_STYLE
+st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
 SECTOR_MAP = {
     "Bankacilik": ["AKBNK", "GARAN", "HALKB", "ISCTR", "VAKBN", "YKBNK", "SKBNK", "ALBRK", "QNBFB", "TSKB"],

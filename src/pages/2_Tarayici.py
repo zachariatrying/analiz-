@@ -16,76 +16,8 @@ from analyzer import Analyzer
 
 st.set_page_config(page_title="Tarayici", page_icon="", layout="wide")
 
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    .stApp { font-family: 'Inter', sans-serif; }
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 40%, #16213e 100%);
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f0c29 0%, #1a1a2e 100%);
-        border-right: 1px solid rgba(255,255,255,0.08);
-    }
-    [data-testid="stSidebar"] .stMarkdown h1,
-    [data-testid="stSidebar"] .stMarkdown h2,
-    [data-testid="stSidebar"] .stMarkdown h3 {
-        color: #e0e0e0; letter-spacing: 0.5px;
-    }
-    [data-testid="stSidebar"] .stSelectbox label,
-    [data-testid="stSidebar"] .stRadio label,
-    [data-testid="stSidebar"] .stSlider label,
-    [data-testid="stSidebar"] .stMultiSelect label,
-    [data-testid="stSidebar"] .stTextInput label,
-    [data-testid="stSidebar"] .stTextArea label {
-        color: #a0aec0 !important; font-weight: 500;
-    }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 24px; margin-bottom: 16px;
-        transition: all 0.3s ease;
-    }
-    .glass-card:hover {
-        border-color: rgba(99, 102, 241, 0.4);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
-    }
-    .streamlit-expanderHeader {
-        font-size: 1.1rem !important; font-weight: 600 !important;
-        background: rgba(255,255,255,0.03) !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(255,255,255,0.08) !important;
-        color: #e2e8f0 !important; padding: 12px 16px !important;
-    }
-    .streamlit-expanderHeader:hover {
-        border-color: rgba(99,102,241,0.35) !important;
-        background: rgba(99,102,241,0.06) !important;
-    }
-    div[data-testid="stMetricValue"] { color: #818cf8; font-family: 'Inter', monospace; font-weight: 700; }
-    div[data-testid="stMetricLabel"] { color: #94a3b8; font-weight: 500; }
-    .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
-        border: none !important; border-radius: 12px !important;
-        font-weight: 600 !important; letter-spacing: 0.5px;
-        padding: 10px 28px !important; transition: all 0.3s ease !important;
-    }
-    .stButton > button[kind="primary"]:hover {
-        box-shadow: 0 4px 20px rgba(99,102,241,0.4) !important;
-        transform: translateY(-1px) !important;
-    }
-    .stDataFrame { width: 100% !important; border-radius: 12px; overflow: hidden; }
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #6366f1, #a78bfa, #c084fc) !important;
-        border-radius: 8px;
-    }
-    hr { border-color: rgba(255,255,255,0.06) !important; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 3px; }
-</style>
-""", unsafe_allow_html=True)
+from src.theme import CSS_STYLE
+st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
 @st.cache_resource
 def get_analyzer():
@@ -395,67 +327,67 @@ else:
     _per = sp.get('yf_per', '2y')
     _res = sp.get('yf_res', None)
 
-        for idx_v, veri in enumerate(bulunanlar):
-            f_name = veri['Formasyon']
-            sinyal_renk = "[Bullish]" if veri.get('Sinyal') == 'Bullish' else "[Bearish]" if veri.get('Sinyal') == 'Bearish' else ""
-            baslik = f"{veri['Hisse']} | {f_name} {sinyal_renk} | Skor: {veri['Skor']} | Pot: %{veri['Potansiyel']:.1f}"
+    for idx_v, veri in enumerate(bulunanlar):
+        f_name = veri['Formasyon']
+        sinyal_renk = "[Bullish]" if veri.get('Sinyal') == 'Bullish' else "[Bearish]" if veri.get('Sinyal') == 'Bearish' else ""
+        baslik = f"{veri['Hisse']} | {f_name} {sinyal_renk} | Skor: {veri['Skor']} | Pot: %{veri['Potansiyel']:.1f}"
 
-            with st.expander(baslik, expanded=True):
-                df_c = veri_getir(veri['Hisse'], _bar, _int, _per, _res)
-                if df_c is not None:
-                    fig = grafik_ciz(df_c, veri['Hisse'], veri)
-                    st.plotly_chart(fig, use_container_width=True, key=f"chart_{veri['Hisse']}_{idx_v}")
-                c1, c2, c3, c4 = st.columns(4)
-                c1.metric("Fiyat", f"{veri['Fiyat']:.2f}")
-                c2.metric("Hedef", f"{veri['Hedef']:.2f}")
-                c3.metric("Stop", f"{veri.get('Stop', 0):.2f}")
-                c4.metric("Skor", f"{veri['Skor']}/100")
-                if veri.get('Strateji'): st.info(f"Strateji: {veri['Strateji']}")
-                meta_parts = []
-                if veri.get('Durum'): meta_parts.append(f"Durum: {veri['Durum']}")
-                if veri.get('Kalite'): meta_parts.append(f"Kalite: {veri['Kalite']}")
-                if veri.get('Vade'): meta_parts.append(f"Vade: {veri['Vade']}")
-                if meta_parts: st.caption(" | ".join(meta_parts))
-                if "Genel" in veri['Formasyon']: st.caption("Formasyon bulunamadi, genel gorunum sunuluyor.")
+        with st.expander(baslik, expanded=True):
+            df_c = veri_getir(veri['Hisse'], _bar, _int, _per, _res)
+            if df_c is not None:
+                fig = grafik_ciz(df_c, veri['Hisse'], veri)
+                st.plotly_chart(fig, use_container_width=True, key=f"chart_{veri['Hisse']}_{idx_v}")
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Fiyat", f"{veri['Fiyat']:.2f}")
+            c2.metric("Hedef", f"{veri['Hedef']:.2f}")
+            c3.metric("Stop", f"{veri.get('Stop', 0):.2f}")
+            c4.metric("Skor", f"{veri['Skor']}/100")
+            if veri.get('Strateji'): st.info(f"Strateji: {veri['Strateji']}")
+            meta_parts = []
+            if veri.get('Durum'): meta_parts.append(f"Durum: {veri['Durum']}")
+            if veri.get('Kalite'): meta_parts.append(f"Kalite: {veri['Kalite']}")
+            if veri.get('Vade'): meta_parts.append(f"Vade: {veri['Vade']}")
+            if meta_parts: st.caption(" | ".join(meta_parts))
+            if "Genel" in veri['Formasyon']: st.caption("Formasyon bulunamadi, genel gorunum sunuluyor.")
 
-                # Alarma Ekle butonu
-                alarm_col1, alarm_col2 = st.columns([1, 3])
-                with alarm_col1:
-                    if st.button("ALARMA EKLE", key=f"alarm_{veri['Hisse']}_{idx_v}", use_container_width=True):
-                        new_alarm = {
-                            'hisse': veri['Hisse'],
-                            'tur': 'Formasyon Hedef / Stop',
-                            'hedef': veri['Hedef'],
-                            'stop': veri.get('Stop', 0.0),
-                            'giris': veri['Fiyat']
-                        }
-                        st.session_state.watchlist.append(new_alarm)
-                        save_watchlist(st.session_state.watchlist)
-                        st.success(f"{veri['Hisse']} alarma eklendi (Hedef: {veri['Hedef']:.2f}, Stop: {veri.get('Stop', 0.0):.2f})")
-                with alarm_col2:
-                    st.caption(f"Hedef {veri['Hedef']:.2f} ve Stop {veri.get('Stop', 0.0):.2f} degerleri ile listeye duser.")
-
-        # Toplu Alarma Ekle
-        st.divider()
-        col_bulk, col_info = st.columns([1, 2])
-        with col_bulk:
-            if st.button("TUM SONUCLARI ALARMA EKLE", type="primary", use_container_width=True):
-                added = 0
-                for v in bulunanlar:
-                    if "Genel" not in v['Formasyon']:
-                        st.session_state.watchlist.append({
-                            'hisse': v['Hisse'],
-                            'tur': 'Formasyon Hedef / Stop',
-                            'hedef': v['Hedef'],
-                            'stop': v.get('Stop', 0.0),
-                            'giris': v['Fiyat']
-                        })
-                        added += 1
-                if added > 0:
+            # Alarma Ekle butonu
+            alarm_col1, alarm_col2 = st.columns([1, 3])
+            with alarm_col1:
+                if st.button("ALARMA EKLE", key=f"alarm_{veri['Hisse']}_{idx_v}", use_container_width=True):
+                    new_alarm = {
+                        'hisse': veri['Hisse'],
+                        'tur': 'Formasyon Hedef / Stop',
+                        'hedef': veri['Hedef'],
+                        'stop': veri.get('Stop', 0.0),
+                        'giris': veri['Fiyat']
+                    }
+                    st.session_state.watchlist.append(new_alarm)
                     save_watchlist(st.session_state.watchlist)
-                st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
-        with col_info:
-            st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")
+                    st.success(f"{veri['Hisse']} alarma eklendi (Hedef: {veri['Hedef']:.2f}, Stop: {veri.get('Stop', 0.0):.2f})")
+            with alarm_col2:
+                st.caption(f"Hedef {veri['Hedef']:.2f} ve Stop {veri.get('Stop', 0.0):.2f} degerleri ile listeye duser.")
+
+    # Toplu Alarma Ekle
+    st.divider()
+    col_bulk, col_info = st.columns([1, 2])
+    with col_bulk:
+        if st.button("TUM SONUCLARI ALARMA EKLE", type="primary", use_container_width=True):
+            added = 0
+            for v in bulunanlar:
+                if "Genel" not in v['Formasyon']:
+                    st.session_state.watchlist.append({
+                        'hisse': v['Hisse'],
+                        'tur': 'Formasyon Hedef / Stop',
+                        'hedef': v['Hedef'],
+                        'stop': v.get('Stop', 0.0),
+                        'giris': v['Fiyat']
+                    })
+                    added += 1
+            if added > 0:
+                save_watchlist(st.session_state.watchlist)
+            st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")
+    with col_info:
+        st.caption(f"Mevcut alarm sayisi: {len(st.session_state.watchlist)}")
 
     st.divider()
     st.markdown("### Ozet Tablo")

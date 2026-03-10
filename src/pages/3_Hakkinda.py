@@ -7,51 +7,8 @@ import pandas as pd
 
 st.set_page_config(page_title="Hakkinda", page_icon="", layout="wide")
 
-st.markdown("""
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    .stApp { font-family: 'Inter', sans-serif; }
-    [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #0f0c29 0%, #1a1a2e 40%, #16213e 100%);
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0f0c29 0%, #1a1a2e 100%);
-        border-right: 1px solid rgba(255,255,255,0.08);
-    }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.04);
-        backdrop-filter: blur(12px);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 24px; margin-bottom: 16px;
-        transition: all 0.3s ease;
-    }
-    .glass-card:hover {
-        border-color: rgba(99, 102, 241, 0.4);
-        box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
-    }
-    .pattern-title { font-size: 1.15rem; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
-    .pattern-type-bullish {
-        display: inline-block; padding: 3px 10px; border-radius: 16px;
-        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;
-        background: rgba(74,222,128,0.15); color: #4ade80; border: 1px solid rgba(74,222,128,0.3);
-    }
-    .pattern-type-bearish {
-        display: inline-block; padding: 3px 10px; border-radius: 16px;
-        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;
-        background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3);
-    }
-    .pattern-type-neutral {
-        display: inline-block; padding: 3px 10px; border-radius: 16px;
-        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;
-        background: rgba(148,163,184,0.15); color: #94a3b8; border: 1px solid rgba(148,163,184,0.3);
-    }
-    hr { border-color: rgba(255,255,255,0.06) !important; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); border-radius: 3px; }
-</style>
-""", unsafe_allow_html=True)
+from src.theme import CSS_STYLE
+st.markdown(CSS_STYLE, unsafe_allow_html=True)
 
 st.markdown("""
 <div style="text-align:center; padding:10px 0 24px 0;">
