@@ -53,10 +53,14 @@ st.markdown("""
 def get_client(api_id, api_hash):
     if st.session_state.client is None:
         try:
-            api_id_int = int(api_id)
+            api_id_int = int(api_id) if api_id else 0
         except ValueError:
             api_id_int = 0
-        client = TelegramClient(SESSION_FILE, api_id_int, api_hash)
+            
+        # Telethon needs non-empty strings, pass a dummy string if empty
+        safe_hash = api_hash if hasattr(api_hash, 'strip') and api_hash.strip() else "dummy_hash"
+        
+        client = TelegramClient(SESSION_FILE, api_id_int, safe_hash)
         st.session_state.client = client
     return st.session_state.client
 
@@ -134,9 +138,16 @@ loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
 # 1. Login State check
-if st.session_state.api_id and st.session_state.api_hash:
-    is_auth = loop.run_until_complete(check_auth())
-    st.session_state.is_authorized = is_auth
+has_valid_creds = bool(st.session_state.api_id and str(st.session_state.api_id).strip() and 
+                      st.session_state.api_hash and str(st.session_state.api_hash).strip())
+
+if has_valid_creds:
+    try:
+        is_auth = loop.run_until_complete(check_auth())
+        st.session_state.is_authorized = is_auth
+    except Exception as e:
+        st.session_state.is_authorized = False
+        st.session_state.auth_msg = f"Baglanti Hatasi: {e}"
 
 if not st.session_state.is_authorized:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
