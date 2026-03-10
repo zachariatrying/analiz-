@@ -3,6 +3,7 @@
 Teknik analiz formasyonları ve indikatör rehberi
 """
 import streamlit as st
+import pandas as pd
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SAYFA AYARLARI
