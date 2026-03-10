@@ -81,7 +81,7 @@ def get_long_data(ticker, period="5y"):
     except:
         return None
 
-def run_backtest(df, analyzer, pattern_type):
+def run_backtest(df, analyzer, pattern_type, secilen_formasyon):
     """Sliding window ile gecmiste formasyon arar ve sonrasindaki performansi olcer."""
     results = []
     window = 150
@@ -119,6 +119,25 @@ def run_backtest(df, analyzer, pattern_type):
                 patterns = analyzer.detect_rsi_divergence(window_df, zz)
 
             for p in patterns:
+                # Eger user Boga Bayrak sectiyse, Ayi Bayrak sonuclarini atla
+                if secilen_formasyon == "Boga Bayrak" and "Ayı" in p.get('name', ''):
+                    continue
+
+                # Benzersizlik kontrolu (ayni formasyon, cok yakin tarihlerde tekrar yakalanmasin)
+                current_date = window_df.index[-1]
+                p_name = p.get('name', 'Bilinmeyen')
+                
+                # Eger ayni formasyon adi son 10 gunde zaten eklendiyse, atla (Sliding window kesisimi)
+                is_duplicate = False
+                for existing in results:
+                    if existing['formasyon'] == p_name:
+                        delta = abs((current_date - existing['tarih']).days)
+                        if delta < 15:  # 15 gun icinde ayni formasyon tipiyse muhtemelen sliding window tekraridir
+                            is_duplicate = True
+                            break
+                if is_duplicate:
+                    continue
+
                 # Formasyondan sonraki 10, 20, 30 gunluk performansi olc
                 end_idx = start + window
                 future = df.iloc[end_idx:end_idx + 30]
@@ -141,8 +160,8 @@ def run_backtest(df, analyzer, pattern_type):
                 hit_stop = float(future['Low'].min()) <= stop
 
                 results.append({
-                    'tarih': window_df.index[-1],
-                    'formasyon': p.get('name', 'Bilinmeyen'),
+                    'tarih': current_date,
+                    'formasyon': p_name,
                     'skor': p.get('score', 50),
                     'giris': entry_price,
                     'hedef': target,
@@ -205,7 +224,7 @@ if btn_test:
     else:
         with st.spinner("Formasyonlar taraniyor (bu islem uzun surebilir)..."):
             bar = st.progress(0)
-            results = run_backtest(df, analyzer_engine, p_type)
+            results = run_backtest(df, analyzer_engine, p_type, bt_formasyon)
             bar.empty()
 
         if not results:
