@@ -61,22 +61,15 @@ def get_client(api_id, api_hash):
 # Asyncio Synchronous Execution Wrapper
 def run_async(coro):
     """
-    Safely runs an async coroutine in a new event loop and returns the result.
-    This prevents RuntimeError: Timeout should be used inside a task
-    which occurs when using loop.run_until_complete() directly with nest_asyncio in python 3.14+
+    Safely runs an async coroutine. 
+    Python 3.11+ requires running complete async flows strictly inside a Task for context management (timeouts).
+    Using asyncio.Runner ensures timeouts and tasks are isolated correctly per execution context.
     """
     try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        
-    if loop.is_running():
-        # Fallback for environments where loop is already running (should not happen often in st)
-        import nest_asyncio
-        nest_asyncio.apply()
-        return loop.run_until_complete(coro)
-    else:
+        with asyncio.Runner() as runner:
+            return runner.run(coro)
+    except AttributeError:
+        # Fallback for Python < 3.11
         return asyncio.run(coro)
 
 async def check_auth():
