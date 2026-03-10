@@ -1,7 +1,8 @@
-<p align="center">
-  <h1 align="center">🦅 ZACHAİRA</h1>
+<div align="center">
+  <h1 align="center">BIST Teknik Analiz Platformu</h1>
+  <p align="center"><strong>Ibrahim Tatar Analiz</strong></p>
   <p align="center">
-    <strong>BIST Borsa Teknik Analiz Platformu</strong>
+    Borsa İstanbul (BIST) hisseleri için gelişmiş teknik analiz ve backtesting aracı.
   </p>
   <p align="center">
     <img src="https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white" alt="Python">
@@ -9,35 +10,15 @@
     <img src="https://img.shields.io/badge/Plotly-Interactive_Charts-3F4F75?logo=plotly&logoColor=white" alt="Plotly">
     <img src="https://img.shields.io/badge/License-MIT-green" alt="License">
   </p>
-</p>
-
----
-
-## 📖 Proje Hakkında
-
-**ZACHAİRA**, BIST (Borsa İstanbul) hisselerini otomatik olarak tarayan ve klasik teknik analiz formasyonlarını tespit eden bir yapay zeka destekli analiz platformudur.
-
-Uygulama, **ZigZag algoritması**, **geometrik doğrulama** ve **hacim profili analizi** kullanarak yatırımcılara potansiyel alım/satım fırsatlarını görselleştirir.
-
-## ✨ Özellikler
-
-### 🔍 Formasyon Tarama Motoru
-
-<div align="center">
-  <h1 align="center">BIST Teknik Analiz Platformu</h1>
-  <p align="center"><strong>Ibrahim Tatar Analiz</strong></p>
-  <p align="center">
-    Borsa İstanbul (BIST) hisseleri için gelişmiş teknik analiz ve backtesting aracı.
-  </p>
 </div>
 
 <hr>
 
 ## 📌 Proje Özeti
 
-**BIST Teknik Analiz Platformu**, BIST (Borsa İstanbul) hisselerini otomatik olarak tarayan ve klasik teknik analiz formasyonlarını tespit eden bir yapay zeka destekli analiz platformudur. Uygulama lokalinizde veya bulutta anlık olarak çalışır; yüzlerce hisseyi dakikalar içinde analiz eder.
+**BIST Teknik Analiz Platformu**, BIST (Borsa İstanbul) hisselerini otomatik olarak tarayan ve klasik teknik analiz formasyonlarını tespit eden bir yapay zeka destekli analiz platformudur.
 
-Premium arayüzü, akıllı bildirim sistemi ve backtest altyapısı ile profesyonel bir borsa asistanı görevi görür.
+Uygulama, **ZigZag algoritması**, **geometrik doğrulama** ve **hacim profili analizi** kullanarak yatırımcılara potansiyel alım/satım fırsatlarını görselleştirir.
 
 ## ✨ Temel Özellikler
 
@@ -107,6 +88,5 @@ analiz/
 ---
 
 <p align="center">
-  <strong>🦅 ZACHAİRA</strong> — Borsa İstanbul Teknik Analiz Platformu
+  <strong>BIST Teknik Analiz Platformu</strong> — Ibrahim Tatar Analiz
 </p>
-
