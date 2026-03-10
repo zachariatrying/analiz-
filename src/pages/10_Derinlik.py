@@ -6,6 +6,10 @@ import streamlit as st
 import asyncio
 import os
 import time
+import pandas as pd
+import yfinance as yf
+import re
+from datetime import datetime
 
 # Tema entegrasyonu
 import sys
@@ -34,6 +38,20 @@ if 'is_authorized' not in st.session_state: st.session_state.is_authorized = Fal
 if 'awaiting_code' not in st.session_state: st.session_state.awaiting_code = False
 if 'phone_code_hash' not in st.session_state: st.session_state.phone_code_hash = ""
 if 'client' not in st.session_state: st.session_state.client = None
+if 'taban_data' not in st.session_state: st.session_state.taban_data = {}
+if 'taban_last_update' not in st.session_state: st.session_state.taban_last_update = None
+if 'monitoring_active' not in st.session_state: st.session_state.monitoring_active = False
+
+BIST100_TICKERS = [
+    "AEFES", "AGHOL", "AKBNK", "AKCNS", "AKSA", "AKSEN", "ALARK", "ALBRK", "ALFAS", "ARCLK", "ASELS", "ASTOR", "ASUZU",
+    "AYDEM", "BAGFS", "BERA", "BIMAS", "BRSAN", "BRYAT", "BUCIM", "CANTE", "CCOLA", "CIMSA", "CWENE", "DOAS", "DOHOL",
+    "EGEEN", "EKGYO", "ENJSA", "ENKAI", "EREGL", "EUPWR", "FROTO", "GARAN", "GENIL", "GESAN", "GLYHO", "GSDHO", "GUBRF",
+    "GWIND", "HALKB", "HEKTS", "IPEKE", "ISCTR", "ISMEN", "KARDMD", "KAYSE", "KCHOL", "KCAER", "KLSER", "KONTR", "KONYA",
+    "KORDS", "KOZAA", "KOZAL", "KRDMD", "MAVI", "MGROS", "MIATK", "ODAS", "OTKAR", "OYAKC", "PENTA", "PETKM", "PGSUS",
+    "QUAGR", "SAHOL", "SASA", "SAYAS", "SDTTR", "SISE", "SKBNK", "SMRTG", "SOKM", "TAVHL", "TCELL", "THYAO", "TKFEN",
+    "TKNSA", "TMSN", "TOASO", "TSKB", "TTKOM", "TTRAK", "TUKAS", "TUPRS", "TURSG", "ULKER", "VAKBN", "VESBE", "VESTL",
+    "YEOTK", "YKBNK", "YYLGD", "ZOREN"
+]
 
 st.markdown("""
 <div style="text-align:center; padding:10px 0 24px 0;">
@@ -189,6 +207,49 @@ async def log_out_client(api_id, api_hash):
     finally:
         await client.disconnect()
 
+# == BIST Scanner Logics ==
+def get_floor_stocks():
+    """Scans BIST100 for stocks at/near floor price (-9.5% to -10.5%)"""
+    tickers = [f"{t}.IS" for t in BIST100_TICKERS]
+    try:
+        data = yf.download(tickers, period="5d", progress=False, group_by='ticker')
+        floor_stocks = []
+        for full_ticker in tickers:
+            try:
+                if len(tickers) > 1:
+                    df = data[full_ticker]
+                else:
+                    df = data
+                
+                if df.empty or len(df) < 2: continue
+                
+                last = float(df['Close'].dropna().iloc[-1])
+                prev = float(df['Close'].dropna().iloc[-2])
+                change = ((last - prev) / prev) * 100
+                
+                if change <= -9.4: # Floor threshold
+                    floor_stocks.append({
+                        "ticker": full_ticker.replace(".IS", ""),
+                        "price": last,
+                        "change": change
+                    })
+            except: continue
+        return floor_stocks
+    except Exception as e:
+        st.error(f"Piyasa tarama hatası: {e}")
+        return []
+
+def parse_lot_from_text(text):
+    """Attempt to extract lot number from bot text using regex"""
+    if not text: return None
+    # Look for patterns like "1.234.567" or "1234567" often near "bekleyen" or "lot"
+    match = re.search(r'(\d{1,3}(?:\.\d{3})*)', text)
+    if match:
+        lot_str = match.group(1).replace(".", "")
+        try: return int(lot_str)
+        except: return None
+    return None
+
 # == UI Logics ==
 
 # 1. Login State check
@@ -253,31 +314,118 @@ if not st.session_state.is_authorized:
     st.markdown('</div>', unsafe_allow_html=True)
 
 else:
-    # 2. Main Derinlik Interface
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.markdown("### 📊 Derinlik Getir")
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        ticker = st.text_input("Hisse Kodu Girin", placeholder="Orn: THYAO, SASA")
-    with col2:
-        st.markdown("<br>", unsafe_allow_html=True)
-        search_btn = st.button("GETIR", type="primary", use_container_width=True)
-        
-    if search_btn and ticker:
-        with st.spinner(f"{ticker} derinlik tablosu Telegramdan cekiiliyor... Lutfen bekleyin (Maks 15sn)"):
-            result = run_async(get_derinlik(st.session_state.api_id, st.session_state.api_hash, ticker))
-            
-            if "error" in result:
-                st.error(result["error"])
-            else:
-                st.success(f"{ticker} derinlik verisi basariyla alindi.")
-                if result.get("text"):
-                    st.markdown(f"**Bot Yaniti:**\n\n```\n{result.get('text')}\n```")
-                
-                if result.get("media"):
-                    st.image(result.get("media"), use_column_width=True, caption=f"{ticker} Derinlik Goruntusu")
+    # 2. Main Interface with Tabs
+    tab1, tab2 = st.tabs(["📊 Tekil Sorgu", "🤖 Taban Avcısı (Otomasyon)"])
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    with tab1:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("### Hisse Derinlik Getir")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            ticker = st.text_input("Hisse Kodu Girin", placeholder="Orn: THYAO, SASA", key="manual_ticker")
+        with col2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            search_btn = st.button("GETIR", type="primary", use_container_width=True, key="manual_search")
+            
+        if search_btn and ticker:
+            with st.spinner(f"{ticker} verileri Telegram'dan çekiliyor..."):
+                result = run_async(get_derinlik(st.session_state.api_id, st.session_state.api_hash, ticker))
+                
+                if "error" in result:
+                    st.error(result["error"])
+                else:
+                    st.success(f"{ticker} verisi alındı.")
+                    if result.get("media"):
+                        st.image(result.get("media"), use_column_width=True)
+                    if result.get("text"):
+                        st.markdown(f"**Bot Yanıtı:**\n\n```\n{result.get('text')}\n```")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with tab2:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.markdown("### 🔍 Taban Lot İzleme")
+        st.caption("Bu mod, BIST'te taban olan hisseleri otomatik bulur ve Telegram üzerinden lot erimesini takip eder.")
+        
+        col_ctrl1, col_ctrl2 = st.columns(2)
+        with col_ctrl1:
+            if not st.session_state.monitoring_active:
+                if st.button("▶️ OTOMASYONU BASLAT", type="primary", use_container_width=True):
+                    st.session_state.monitoring_active = True
+                    st.rerun()
+            else:
+                if st.button("⏹️ OTOMASYONU DURDUR", type="secondary", use_container_width=True):
+                    st.session_state.monitoring_active = False
+                    st.rerun()
+        
+        with col_ctrl2:
+            interval = st.select_slider("Kontrol Aralığı (Dakika)", options=[1, 2, 5, 10, 15], value=5)
+
+        if st.session_state.monitoring_active:
+            status_placeholder = st.empty()
+            status_placeholder.info(f"Otomasyon aktif. {interval} dakikada bir kontrol ediliyor...")
+            
+            # Check if it's time to scan
+            now = time.time()
+            if st.session_state.taban_last_update is None or (now - st.session_state.taban_last_update) > (interval * 60):
+                status_placeholder.warning("Piyasa taranıyor (Taban hisseler tespit ediliyor)...")
+                floors = get_floor_stocks()
+                st.session_state.taban_last_update = now
+                
+                if floors:
+                    status_placeholder.info(f"{len(floors)} adet taban hisse bulundu. Telegram derinlik sorguları yapılıyor...")
+                    for stock in floors:
+                        t = stock['ticker']
+                        res = run_async(get_derinlik(st.session_state.api_id, st.session_state.api_hash, t))
+                        
+                        lot_count = parse_lot_from_text(res.get("text", ""))
+                        
+                        # Compare with previous
+                        prev_lot = st.session_state.taban_data.get(t, {}).get("lot", 0)
+                        diff = 0
+                        if prev_lot > 0 and lot_count is not None:
+                            diff = lot_count - prev_lot
+                            
+                        st.session_state.taban_data[t] = {
+                            "price": stock['price'],
+                            "change": stock['change'],
+                            "lot": lot_count,
+                            "diff": diff,
+                            "last_sync": datetime.now().strftime("%H:%M:%S"),
+                            "raw_text": res.get("text", "")
+                        }
+                else:
+                    status_placeholder.success("Şu an tabanda hisse bulunamadı.")
+            
+            # Display results
+            if st.session_state.taban_data:
+                for t, data in st.session_state.taban_data.items():
+                    diff_str = ""
+                    if data['diff'] < 0:
+                        diff_str = f"🔴 Lot Erimesi: {abs(data['diff']):,} lot azaldı!"
+                    elif data['diff'] > 0:
+                        diff_str = f"⚪ Lot Artışı: {data['diff']:,} lot eklendi."
+                        
+                    st.markdown(f"""
+                    <div style="padding:10px; background:rgba(255,255,255,0.03); border-radius:8px; margin-bottom:10px; border-left:4px solid {'#ef4444' if data['diff'] >= 0 else '#22c55e'}">
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong style="font-size:1.1rem; color:#e2e8f0;">{t}</strong>
+                            <span style="color:#64748b; font-size:0.8rem;">Son Sync: {data['last_sync']}</span>
+                        </div>
+                        <div style="color:#94a3b8; font-size:0.9rem;">
+                            Fiyat: {data['price']} (%{data['change']:.2f}) | 
+                            <b>Kilitli Lot: {data['lot']:, if data['lot'] else 'Bilinmiyor'}</b>
+                        </div>
+                        <div style="color:{'#f87171' if data['diff'] >= 0 else '#4ade80'}; font-weight:bold; margin-top:4px;">
+                            {diff_str}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            # Auto refresh trick for Streamlit
+            time.sleep(10)
+            st.rerun()
+
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Oturumu kapat butonu
     if st.button("❌ Oturumu Kapat", type="secondary"):
