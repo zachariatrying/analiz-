@@ -419,6 +419,7 @@ else:
                             'tur': 'Formasyon Hedef / Stop',
                             'hedef': veri['Hedef'],
                             'stop': veri.get('Stop', 0.0),
+                            'giris': veri['Fiyat']
                         }
                         st.session_state.watchlist.append(new_alarm)
                         st.success(f"{veri['Hisse']} alarma eklendi (Hedef: {veri['Hedef']:.2f}, Stop: {veri.get('Stop', 0.0):.2f})")
@@ -438,6 +439,7 @@ else:
                             'tur': 'Formasyon Hedef / Stop',
                             'hedef': v['Hedef'],
                             'stop': v.get('Stop', 0.0),
+                            'giris': v['Fiyat']
                         })
                         added += 1
                 st.success(f"{added} alarm eklendi. Alarm sayfasindan kontrol edebilirsiniz.")

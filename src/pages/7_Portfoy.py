@@ -125,48 +125,203 @@ if st.button("Toplu Ekle", key="bulk_tx"):
         st.rerun()
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- Portfoy Gorunumu ---
-if st.session_state.portfolio:
-    st.divider()
+# --- Sekmeler (Tabs) ---
+st.divider()
+tab_portfoy, tab_takip = st.tabs(["📊 Acik Pozisyonlar", "🎯 Takip Listesi (Alarmlar)"])
 
-    col_h, col_t = st.columns([3, 1])
-    with col_h:
-        st.markdown("### Portfoy Durumu")
-    with col_t:
-        if st.button("Tum Islemleri Temizle"):
-            st.session_state.portfolio = []
-            st.rerun()
+with tab_portfoy:
+    if st.session_state.portfolio:
+        col_h, col_t = st.columns([3, 1])
+        with col_h:
+            st.markdown("### Portfoy Durumu")
+        with col_t:
+            if st.button("Tum Islemleri Temizle"):
+                st.session_state.portfolio = []
+                st.rerun()
 
-    btn_guncelle = st.button("PORTFOYU GUNCELLE (Canli Fiyat)", type="primary", use_container_width=True)
+        btn_guncelle = st.button("PORTFOYU GUNCELLE (Canli Fiyat)", type="primary", use_container_width=True)
 
-    # Islem tablosu
-    tx_df = pd.DataFrame(st.session_state.portfolio)
-    st.dataframe(tx_df, use_container_width=True, hide_index=True)
+        # Islem tablosu
+        tx_df = pd.DataFrame(st.session_state.portfolio)
+        st.dataframe(tx_df, use_container_width=True, hide_index=True)
 
-    if btn_guncelle:
-        # Net pozisyonlari hesapla
-        positions = {}
-        for tx in st.session_state.portfolio:
-            h = tx['hisse']
-            if h not in positions:
-                positions[h] = {'lot': 0, 'maliyet': 0}
-            if tx['islem'] == 'ALIS':
-                positions[h]['maliyet'] += tx['toplam']
-                positions[h]['lot'] += tx['lot']
+        if btn_guncelle:
+            # Net pozisyonlari hesapla
+            positions = {}
+            for tx in st.session_state.portfolio:
+                h = tx['hisse']
+                if h not in positions:
+                    positions[h] = {'lot': 0, 'maliyet': 0}
+                if tx['islem'] == 'ALIS':
+                    positions[h]['maliyet'] += tx['toplam']
+                    positions[h]['lot'] += tx['lot']
+                else:
+                    positions[h]['lot'] -= tx['lot']
+                    positions[h]['maliyet'] -= tx['toplam']
+
+            # Sifir veya negatif pozisyonlari kaldir
+            positions = {k: v for k, v in positions.items() if v['lot'] > 0}
+
+            if not positions:
+                st.warning("Acik pozisyon yok.")
             else:
-                positions[h]['lot'] -= tx['lot']
-                positions[h]['maliyet'] -= tx['toplam']
+                # Canli fiyatlari cek
+                tickers = list(positions.keys())
+                symbols = [f"{t}.IS" for t in tickers]
 
-        # Sifir veya negatif pozisyonlari kaldir
-        positions = {k: v for k, v in positions.items() if v['lot'] > 0}
+                with st.spinner("Canli fiyatlar yukleniyor..."):
+                    try:
+                        if len(symbols) == 1:
+                            data = yf.download(symbols[0], period="2d", progress=False)
+                            if isinstance(data.columns, pd.MultiIndex):
+                                data.columns = data.columns.get_level_values(0)
+                            prices = {tickers[0]: float(data['Close'].dropna().iloc[-1])}
+                        else:
+                            data = yf.download(symbols, period="2d", progress=False, group_by='ticker')
+                            prices = {}
+                            for ticker, symbol in zip(tickers, symbols):
+                                try:
+                                    df = data[symbol]
+                                    prices[ticker] = float(df['Close'].dropna().iloc[-1])
+                                except: pass
+                    except:
+                        prices = {}
 
-        if not positions:
-            st.warning("Acik pozisyon yok.")
+                # Portfoy hesaplama
+                rows = []
+                total_maliyet = 0
+                total_guncel = 0
+                total_kar = 0
+
+                for hisse, pos in positions.items():
+                    guncel_fiyat = prices.get(hisse, 0)
+                    ort_maliyet = pos['maliyet'] / pos['lot'] if pos['lot'] > 0 else 0
+                    guncel_deger = guncel_fiyat * pos['lot']
+                    kar_zarar = guncel_deger - pos['maliyet']
+                    kar_pct = ((guncel_fiyat - ort_maliyet) / ort_maliyet) * 100 if ort_maliyet > 0 else 0
+
+                    total_maliyet += pos['maliyet']
+                    total_guncel += guncel_deger
+                    total_kar += kar_zarar
+
+                    rows.append({
+                        'Hisse': hisse,
+                        'Lot': pos['lot'],
+                        'Ort. Maliyet': f"{ort_maliyet:.2f}",
+                        'Guncel Fiyat': f"{guncel_fiyat:.2f}",
+                        'Maliyet': f"{pos['maliyet']:,.0f}",
+                        'Guncel Deger': f"{guncel_deger:,.0f}",
+                        'Kar/Zarar': f"{kar_zarar:,.0f}",
+                        'Kar %': f"%{kar_pct:.2f}",
+                        '_kar_zarar': kar_zarar,
+                        '_deger': guncel_deger,
+                    })
+
+                # Ozet kartlari
+                total_pct = ((total_guncel - total_maliyet) / total_maliyet) * 100 if total_maliyet > 0 else 0
+                pct_color = "#4ade80" if total_kar >= 0 else "#f87171"
+
+                mc1, mc2, mc3, mc4 = st.columns(4)
+                summaries = [
+                    ("Toplam Maliyet", f"{total_maliyet:,.0f} TL"),
+                    ("Guncel Deger", f"{total_guncel:,.0f} TL"),
+                    ("Kar / Zarar", f"{total_kar:,.0f} TL"),
+                    ("Toplam Getiri", f"%{total_pct:.2f}"),
+                ]
+                for col, (label, value) in zip([mc1, mc2, mc3, mc4], summaries):
+                    with col:
+                        st.markdown(f"""
+                        <div class="metric-card">
+                            <div class="metric-label">{label}</div>
+                            <div class="metric-value" style="color:{pct_color if 'Kar' in label or 'Getiri' in label else '#e2e8f0'}">{value}</div>
+                        </div>
+                        """, unsafe_allow_html=True)
+
+                st.markdown("<br>", unsafe_allow_html=True)
+
+                # Detayli tablo
+                detail_df = pd.DataFrame(rows)
+                display_cols = ['Hisse', 'Lot', 'Ort. Maliyet', 'Guncel Fiyat', 'Maliyet', 'Guncel Deger', 'Kar/Zarar', 'Kar %']
+                st.dataframe(detail_df[display_cols], use_container_width=True, hide_index=True)
+
+                # Portfoy dagilimi pasta grafigi
+                st.divider()
+                col_pie, col_bar = st.columns(2)
+
+                with col_pie:
+                    st.markdown("### Portfoy Dagilimi")
+                    labels = [r['Hisse'] for r in rows]
+                    values = [r['_deger'] for r in rows]
+                    colors = ['#818cf8', '#c084fc', '#f472b6', '#4ade80', '#fbbf24', '#38bdf8', '#f87171', '#a78bfa']
+
+                    fig_pie = go.Figure(data=[go.Pie(
+                        labels=labels, values=values,
+                        marker=dict(colors=colors[:len(labels)]),
+                        hole=0.45, textinfo='label+percent',
+                        textfont=dict(color='#e2e8f0', size=12),
+                    )])
+                    fig_pie.update_layout(
+                        paper_bgcolor='rgba(0,0,0,0)', height=350,
+                        margin=dict(l=10, r=10, t=10, b=10),
+                        font=dict(color='#94a3b8'), showlegend=False,
+                    )
+                    st.plotly_chart(fig_pie, use_container_width=True)
+
+                with col_bar:
+                    st.markdown("### Kar/Zarar Dagilimi")
+                    bar_colors = ['#4ade80' if r['_kar_zarar'] >= 0 else '#f87171' for r in rows]
+                    fig_bar = go.Figure(data=[go.Bar(
+                        x=[r['Hisse'] for r in rows],
+                        y=[r['_kar_zarar'] for r in rows],
+                        marker_color=bar_colors,
+                    )])
+                    fig_bar.update_layout(
+                        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                        height=350, margin=dict(l=10, r=10, t=10, b=10),
+                        xaxis=dict(gridcolor='rgba(128,128,128,0.08)'),
+                        yaxis=dict(gridcolor='rgba(128,128,128,0.08)', title='TL'),
+                        font=dict(color='#94a3b8'),
+                    )
+                    st.plotly_chart(fig_bar, use_container_width=True)
+    else:
+        st.markdown("""
+        <div class="glass-card" style="text-align:center; padding:40px;">
+            <p style="color:#64748b; font-size:1rem;">Henuz islem eklenmedi</p>
+            <p style="color:#475569; font-size:0.85rem;">Yukaridaki formu kullanarak alis/satis islemleri ekleyin</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+
+with tab_takip:
+    if 'watchlist' not in st.session_state or len(st.session_state.watchlist) == 0:
+        st.info("Henüz alarma eklenmis bir hisse yok. Tarayici sayfasindan tespit edilen formasyonlari alarma ekleyebilirsiniz.")
+    else:
+        st.markdown("### Takip Listem (Alarmlar)")
+        
+        btn_takip = st.button("TAKIP LİSTESİNİ GUNCELLE (Canli Fiyat)", type="primary", use_container_width=True, key="btn_takip")
+        
+        # Baslangic DataFrame'i
+        takip_df = pd.DataFrame(st.session_state.watchlist)
+        if 'giris' not in takip_df.columns:
+            takip_df['giris'] = 0.0
+        if 'stop' not in takip_df.columns:
+            takip_df['stop'] = 0.0
+            
+        takip_df.rename(columns={'hisse': 'Hisse', 'tur': 'Tur', 'hedef': 'Hedef', 'stop': 'Stop', 'giris': 'Giris'}, inplace=True)
+        takip_cols = ['Hisse', 'Tur', 'Giris', 'Hedef', 'Stop']
+        
+        display_df = takip_df[takip_cols].copy()
+        display_df['Giris'] = display_df['Giris'].apply(lambda x: f"{x:.2f}" if float(x) > 0 else "Bilinmiyor")
+        display_df['Hedef'] = display_df['Hedef'].apply(lambda x: f"{x:.2f}")
+        display_df['Stop'] = display_df['Stop'].apply(lambda x: f"{x:.2f}" if float(x) > 0 else "-")
+        
+        if not btn_takip:
+            st.dataframe(display_df, use_container_width=True, hide_index=True)
         else:
-            # Canli fiyatlari cek
-            tickers = list(positions.keys())
+            # Canli Fiyat Cek ve Kar Zarar goster
+            tickers = list(takip_df['Hisse'].unique())
             symbols = [f"{t}.IS" for t in tickers]
-
+            
             with st.spinner("Canli fiyatlar yukleniyor..."):
                 try:
                     if len(symbols) == 1:
@@ -184,109 +339,46 @@ if st.session_state.portfolio:
                             except: pass
                 except:
                     prices = {}
-
-            # Portfoy hesaplama
-            rows = []
-            total_maliyet = 0
-            total_guncel = 0
-            total_kar = 0
-
-            for hisse, pos in positions.items():
-                guncel_fiyat = prices.get(hisse, 0)
-                ort_maliyet = pos['maliyet'] / pos['lot'] if pos['lot'] > 0 else 0
-                guncel_deger = guncel_fiyat * pos['lot']
-                kar_zarar = guncel_deger - pos['maliyet']
-                kar_pct = ((guncel_fiyat - ort_maliyet) / ort_maliyet) * 100 if ort_maliyet > 0 else 0
-
-                total_maliyet += pos['maliyet']
-                total_guncel += guncel_deger
-                total_kar += kar_zarar
-
-                rows.append({
-                    'Hisse': hisse,
-                    'Lot': pos['lot'],
-                    'Ort. Maliyet': f"{ort_maliyet:.2f}",
-                    'Guncel Fiyat': f"{guncel_fiyat:.2f}",
-                    'Maliyet': f"{pos['maliyet']:,.0f}",
-                    'Guncel Deger': f"{guncel_deger:,.0f}",
-                    'Kar/Zarar': f"{kar_zarar:,.0f}",
-                    'Kar %': f"%{kar_pct:.2f}",
-                    '_kar_zarar': kar_zarar,
-                    '_deger': guncel_deger,
+                    
+            # Fiyatlari Guncelle
+            live_rows = []
+            for _, row in takip_df.iterrows():
+                h = row['Hisse']
+                c_price = prices.get(h, 0.0)
+                g_price = float(row['Giris']) if row['Giris'] else 0.0
+                h_price = float(row['Hedef'])
+                s_price = float(row['Stop'])
+                
+                pct_change = ((c_price - g_price) / g_price) * 100 if g_price > 0 else 0
+                
+                # Hedefe / Stoba yaklasikligi hesaplama (opsiyonel gorsel stat)
+                dist_target = ((h_price - c_price) / c_price) * 100 if c_price > 0 else 0
+                
+                # Sinyal Durumu
+                status_icon = "⏳"
+                if c_price >= h_price and h_price > 0:
+                    status_icon = "✅ (Hedef)"
+                elif c_price <= s_price and s_price > 0:
+                    status_icon = "❌ (Stop)"
+                
+                live_rows.append({
+                    'Hisse': h,
+                    'Sinyal Fiyati (Giris)': f"{g_price:.2f}" if g_price > 0 else "-",
+                    'Anlik Fiyat': f"{c_price:.2f}" if c_price > 0 else "-",
+                    'Degisim': f"%{pct_change:.2f}",
+                    'Hedef': f"{h_price:.2f}",
+                    'Hedefe Uzaklik': f"%{dist_target:.2f}" if c_price > 0 else "-",
+                    'Stop': f"{s_price:.2f}" if s_price > 0 else "-",
+                    'Durum': status_icon
                 })
-
-            # Ozet kartlari
-            total_pct = ((total_guncel - total_maliyet) / total_maliyet) * 100 if total_maliyet > 0 else 0
-            pct_color = "#4ade80" if total_kar >= 0 else "#f87171"
-
-            mc1, mc2, mc3, mc4 = st.columns(4)
-            summaries = [
-                ("Toplam Maliyet", f"{total_maliyet:,.0f} TL"),
-                ("Guncel Deger", f"{total_guncel:,.0f} TL"),
-                ("Kar / Zarar", f"{total_kar:,.0f} TL"),
-                ("Toplam Getiri", f"%{total_pct:.2f}"),
-            ]
-            for col, (label, value) in zip([mc1, mc2, mc3, mc4], summaries):
-                with col:
-                    st.markdown(f"""
-                    <div class="metric-card">
-                        <div class="metric-label">{label}</div>
-                        <div class="metric-value">{value}</div>
-                    </div>
-                    """, unsafe_allow_html=True)
-
-            st.markdown("<br>", unsafe_allow_html=True)
-
-            # Detayli tablo
-            detail_df = pd.DataFrame(rows)
-            display_cols = ['Hisse', 'Lot', 'Ort. Maliyet', 'Guncel Fiyat', 'Maliyet', 'Guncel Deger', 'Kar/Zarar', 'Kar %']
-            st.dataframe(detail_df[display_cols], use_container_width=True, hide_index=True)
-
-            # Portfoy dagilimi pasta grafigi
-            st.divider()
-            col_pie, col_bar = st.columns(2)
-
-            with col_pie:
-                st.markdown("### Portfoy Dagilimi")
-                labels = [r['Hisse'] for r in rows]
-                values = [r['_deger'] for r in rows]
-                colors = ['#818cf8', '#c084fc', '#f472b6', '#4ade80', '#fbbf24', '#38bdf8', '#f87171', '#a78bfa']
-
-                fig_pie = go.Figure(data=[go.Pie(
-                    labels=labels, values=values,
-                    marker=dict(colors=colors[:len(labels)]),
-                    hole=0.45, textinfo='label+percent',
-                    textfont=dict(color='#e2e8f0', size=12),
-                )])
-                fig_pie.update_layout(
-                    paper_bgcolor='rgba(0,0,0,0)', height=350,
-                    margin=dict(l=10, r=10, t=10, b=10),
-                    font=dict(color='#94a3b8'), showlegend=False,
-                )
-                st.plotly_chart(fig_pie, use_container_width=True)
-
-            with col_bar:
-                st.markdown("### Kar/Zarar Dagilimi")
-                bar_colors = ['#4ade80' if r['_kar_zarar'] >= 0 else '#f87171' for r in rows]
-                fig_bar = go.Figure(data=[go.Bar(
-                    x=[r['Hisse'] for r in rows],
-                    y=[r['_kar_zarar'] for r in rows],
-                    marker_color=bar_colors,
-                )])
-                fig_bar.update_layout(
-                    paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                    height=350, margin=dict(l=10, r=10, t=10, b=10),
-                    xaxis=dict(gridcolor='rgba(128,128,128,0.08)'),
-                    yaxis=dict(gridcolor='rgba(128,128,128,0.08)', title='TL'),
-                    font=dict(color='#94a3b8'),
-                )
-                st.plotly_chart(fig_bar, use_container_width=True)
-
-else:
-    st.markdown("""
-    <div class="glass-card" style="text-align:center; padding:40px;">
-        <p style="color:#64748b; font-size:1rem;">Henuz islem eklenmedi</p>
-        <p style="color:#475569; font-size:0.85rem;">Yukaridaki formu kullanarak alis/satis islemleri ekleyin</p>
-    </div>
-    """, unsafe_allow_html=True)
+                
+            ldf = pd.DataFrame(live_rows)
+            st.dataframe(ldf, use_container_width=True, hide_index=True)
+            
+            # Formisyon temizleme butonu
+            col1, col2 = st.columns([1, 4])
+            with col1:
+                if st.button("Tum Alarmlari Temizle"):
+                    st.session_state.watchlist = []
+                    st.rerun()
 
