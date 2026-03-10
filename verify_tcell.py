@@ -32,3 +32,4 @@ def verify_price(ticker):
 
 if __name__ == "__main__":
     verify_price("TCELL.IS")
+

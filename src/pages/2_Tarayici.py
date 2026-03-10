@@ -450,3 +450,4 @@ else:
     csv = df_final[cols].to_csv(index=False).encode('utf-8-sig')
     st.download_button(label="Sonuclari CSV olarak indir", data=csv, file_name="tarama_sonuclari.csv", mime="text/csv")
 
+

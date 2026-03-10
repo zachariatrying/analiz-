@@ -49,3 +49,4 @@ if found_any == 0:
     dev = 0.04
     zz = analyzer.calculate_zigzag(df, deviation=dev)
     print(f"THYAO ZigZag Points: {len(zz)}")
+

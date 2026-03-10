@@ -50,3 +50,4 @@ EARNINGS_DB = {
 def get_earnings_dates(ticker):
     """Returns a list of earnings dates for the given ticker."""
     return EARNINGS_DB.get(ticker, [])
+

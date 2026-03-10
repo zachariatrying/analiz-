@@ -14,3 +14,4 @@ with open('src/analyzer.py', 'w', encoding='utf-8') as f:
     f.writelines(new_lines)
 
 print("File truncated successfully.")
+

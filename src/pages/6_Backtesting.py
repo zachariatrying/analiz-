@@ -322,3 +322,4 @@ st.markdown("""
     Backtesting sonuclari gecmis performansi gosterir, gelecek performansi garanti etmez.
 </div>
 """, unsafe_allow_html=True)
+

@@ -42,3 +42,4 @@ for t, p, r in results:
         print(f"{t}: {p:.2f} ({r} rows)")
     except:
         print(f"{t}: {p} ({r} rows)")
+

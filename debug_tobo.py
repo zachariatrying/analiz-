@@ -51,3 +51,4 @@ patterns = analyzer.detect_tobo_zigzag(df, zz)
 print(f"\nPatterns Found: {len(patterns)}")
 for p in patterns:
     print(p)
+

@@ -13,3 +13,4 @@ Score: 105
 Desc: Direk: %62.4. Derinlik: %21. CONFIRMED
 Points: {'p_start_idx': 442, 'p_start_val': 77.75, 'p_end_idx': 473, 'p_end_val': 126.3, 'f_end_idx': 499, 'res_start': 107.67989417989416, 'res_end': 114.97195767195765, 'sup_start': 100.96878306878307, 'sup_end': 107.905291005291}
 Target: 163.52195767195764
+

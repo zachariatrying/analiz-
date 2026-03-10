@@ -41,3 +41,4 @@ try:
         print("Could not fetch data.")
 except Exception as e:
     print(f"Error: {e}")
+

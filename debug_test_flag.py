@@ -33,3 +33,4 @@ print(f"PATTERNS: {[p['name'] for p in res]}")
 for p in res:
     if 'Flama' in p['name']:
         print(f"SUCCESS: {p}")
+

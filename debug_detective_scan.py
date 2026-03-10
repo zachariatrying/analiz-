@@ -57,3 +57,4 @@ def dedektif_tarama(hisse_listesi):
 if __name__ == "__main__":
     test_tickers = ["THYAO.IS", "GARAN.IS", "ASELS.IS", "KCHOL.IS", "AKBNK.IS"]
     dedektif_tarama(test_tickers)
+

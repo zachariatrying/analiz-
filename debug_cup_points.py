@@ -45,3 +45,4 @@ with open('debug_zz.txt', 'w') as f:
     f.write(f"\nPatterns Found: {len(patterns)}\n")
     for p in patterns:
         f.write(f"Name: {p['name']}, Score: {p['score']}\n")
+

@@ -83,3 +83,4 @@ class MacroDataManager:
             if start <= d <= curr:
                 recent.append(e)
         return recent
+

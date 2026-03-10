@@ -169,3 +169,4 @@ st.markdown("""
     Sol menuден sayfalara gecis yapabilirsiniz
 </div>
 """, unsafe_allow_html=True)
+

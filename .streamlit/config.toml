@@ -11,3 +11,4 @@ enableCORS = false
 
 [browser]
 gatherUsageStats = false
+

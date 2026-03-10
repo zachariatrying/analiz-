@@ -215,3 +215,4 @@ st.markdown("""
     Haberler yfinance uzerinden cekilmektedir. Sentiment analizi basit kelime bazlidir.
 </div>
 """, unsafe_allow_html=True)
+

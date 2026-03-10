@@ -38,3 +38,4 @@ def fetch_bist_tickers():
 
 if __name__ == "__main__":
     fetch_bist_tickers()
+

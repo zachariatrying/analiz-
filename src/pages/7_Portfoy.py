@@ -289,3 +289,4 @@ else:
         <p style="color:#475569; font-size:0.85rem;">Yukaridaki formu kullanarak alis/satis islemleri ekleyin</p>
     </div>
     """, unsafe_allow_html=True)
+

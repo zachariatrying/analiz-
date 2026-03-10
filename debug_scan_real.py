@@ -91,3 +91,4 @@ for hisse in tickers:
 
 print(f"\n--- TARAMA BİTTİ ({found_count} hisse bulundu) ---")
 print(f"Süre: {time.time()-start_total:.2f}s")
+

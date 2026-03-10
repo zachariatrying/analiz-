@@ -10,3 +10,4 @@ echo Lutfen tarayicinin acilmasini bekleyin...
 python -m streamlit run src/app.py
 
 pause
+

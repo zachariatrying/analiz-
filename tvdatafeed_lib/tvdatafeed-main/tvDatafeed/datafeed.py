@@ -486,3 +486,4 @@ class TvDatafeedLive(tvDatafeed.TvDatafeed):
         if self._main_thread is not None:
             self.__del__()  
         
+

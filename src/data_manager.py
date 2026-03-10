@@ -226,3 +226,4 @@ class DataManager:
                 ticker_map[t] = sec
         
         return ticker_map
+

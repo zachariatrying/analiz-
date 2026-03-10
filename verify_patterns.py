@@ -59,3 +59,4 @@ for p in patterns_down:
         # print(f"Chart saved to: {path}")
 
 print("\nDONE.")
+

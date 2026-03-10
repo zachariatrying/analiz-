@@ -18,3 +18,4 @@ df = pd.DataFrame({
 res = a.detect_flag_pattern(df)
 print(f"RESULT TYPE: {type(res)}")
 print(f"RESULT VALUE: {res}")
+

@@ -43,3 +43,4 @@ patterns = analyzer.detect_cup_zigzag(df, zz)
 print("\nPatterns Found:")
 for p in patterns:
     print(p)
+

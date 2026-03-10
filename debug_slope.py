@@ -14,3 +14,4 @@ s = calculate_trend_slope(y)
 print(f"Calculated Slope: {s}")
 print(f"Is > 0.0? {s > 0.0}")
 print(f"Is > 0.005? {s > 0.005}")
+

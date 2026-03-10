@@ -1967,3 +1967,4 @@ class Analyzer:
 
         scores.sort(key=lambda x: x['score'])
         return scores[:top_n]
+

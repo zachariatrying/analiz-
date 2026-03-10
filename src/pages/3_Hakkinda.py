@@ -292,3 +292,4 @@ with tab3:
         Bu uygulama egitim amacli gelistirilmistir. Yatirim tavsiyesi degildir.
     </div>
     """, unsafe_allow_html=True)
+

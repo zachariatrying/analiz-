@@ -210,3 +210,4 @@ st.markdown("""
     Bot token'inizi kimseyle paylasmayiniz. Token bu oturumda gecici olarak saklanir.
 </div>
 """, unsafe_allow_html=True)
+

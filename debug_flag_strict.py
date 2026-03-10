@@ -66,3 +66,4 @@ for p in recent_peaks:
     if pole_pct < 0.10: print("  -> REJECT: Pole too small (<10%)")
     elif avg_return < 0.01: print("  -> REJECT: Momentum too low (<1%/bar)")
     else: print("  -> CANDIDATE PASSED POLE CHECK")
+

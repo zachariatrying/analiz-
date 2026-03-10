@@ -99,3 +99,4 @@ if len(patterns_valid) > 0:
     print(f"SUCCESS: Valid pattern detected! Name: {patterns_valid[0]['name']}")
 else:
     print("FAILURE: Valid pattern REJECTED! Logic is too strict.")
+

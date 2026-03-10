@@ -52,3 +52,4 @@ with open(file_path, 'w', encoding='utf-8') as f:
     f.writelines(new_lines)
 
 print("Finished cleaning analyzer.py")
+

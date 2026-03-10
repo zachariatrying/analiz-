@@ -107,3 +107,4 @@ a = Analyzer()
 df = create_flag_data().iloc[:85].copy()
 res = a.detect_flag_pattern(df)
 print(f"FINAL RESULT: {res}")
+

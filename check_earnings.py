@@ -24,3 +24,4 @@ def check_earnings():
 
 if __name__ == "__main__":
     check_earnings()
+

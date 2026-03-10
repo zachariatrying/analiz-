@@ -5,3 +5,4 @@ GARAN.IS,GARAN.IS,TOBO (CONFIRMED),50,"{'p_start_idx': 433, 'p_start_val': 128.0
 KCHOL.IS,KCHOL.IS,Fincan Kulp (CONFIRMED),60,"{'p_start_idx': 414, 'p_start_val': 178.7, 'p_end_idx': 458, 'p_end_val': 176.3, 'f_end_idx': 460, 'res_start': 176.3, 'res_end': 176.3, 'sup_start': 146.0, 'sup_end': 146.0}",206.60000000000002,-0.53,207.7
 TUPRS.IS,TUPRS.IS,Fincan Kulp (CONFIRMED),80,"{'p_start_idx': 449, 'p_start_val': 209.3, 'p_end_idx': 492, 'p_end_val': 230.6, 'f_end_idx': 493, 'res_start': 230.6, 'res_end': 230.6, 'sup_start': 182.4, 'sup_end': 182.4}",278.79999999999995,13.89,244.8
 SISE.IS,SISE.IS,TOBO (CONFIRMED),75,"{'p_start_idx': 150, 'p_start_val': 39.5, 'p_end_idx': 179, 'p_end_val': 38.32, 'f_end_idx': 499, 'head_idx': 172, 'head_val': 37.48, 'neck_slope': -0.15999999999999964, 'neck_intercept': 69.49999999999994, 'res_start': 45.5, 'res_end': -10.339999999999876, 'sup_start': 37.48, 'sup_end': 37.48}",-5.839999999999868,0.0,45.5
+
