@@ -61,30 +61,15 @@ def get_client(api_id, api_hash):
 import threading
 import concurrent.futures
 
-# Asyncio Synchronous Execution Wrapper (Thread-Based)
-def _run_in_new_loop(coro):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    
-    async def task_wrapper():
-        # nest_asyncio overrides loop.run_until_complete globally and drops the asyncio.Task context.
-        # Python 3.14+ timeout requires a task context. We wrap the user coro in an explicit task here.
-        task = loop.create_task(coro)
-        return await task
-        
-    try:
-        return loop.run_until_complete(task_wrapper())
-    finally:
-        loop.close()
-
 def run_async(coro):
     """
     Safely runs an async coroutine. 
     To bypass Streamlit's main thread asyncio restrictions and 'Timeout should be used inside a task' errors in Python 3.14+,
-    we execute the Telethon client operations in a completely isolated background thread with its own event loop.
+    we execute the Telethon client operations in a completely isolated background thread running a pristine asyncio.run() environment.
+    This prevents nest_asyncio's global event loop patches from stripping context variables needed by Telethon.
     """
     with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-        future = executor.submit(_run_in_new_loop, coro)
+        future = executor.submit(asyncio.run, coro)
         return future.result()
 
 async def check_auth(api_id, api_hash):
