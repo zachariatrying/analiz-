@@ -58,19 +58,27 @@ def get_client(api_id, api_hash):
     
     return TelegramClient(SESSION_FILE, api_id_int, safe_hash)
 
-# Asyncio Synchronous Execution Wrapper
+import threading
+import concurrent.futures
+
+# Asyncio Synchronous Execution Wrapper (Thread-Based)
+def _run_in_new_loop(coro):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        return loop.run_until_complete(coro)
+    finally:
+        loop.close()
+
 def run_async(coro):
     """
     Safely runs an async coroutine. 
-    Python 3.11+ requires running complete async flows strictly inside a Task for context management (timeouts).
-    Using asyncio.Runner ensures timeouts and tasks are isolated correctly per execution context.
+    To bypass Streamlit's main thread asyncio restrictions and 'Timeout should be used inside a task' errors in Python 3.14+,
+    we execute the Telethon client operations in a completely isolated background thread with its own event loop.
     """
-    try:
-        with asyncio.Runner() as runner:
-            return runner.run(coro)
-    except AttributeError:
-        # Fallback for Python < 3.11
-        return asyncio.run(coro)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(_run_in_new_loop, coro)
+        return future.result()
 
 async def check_auth():
     if not (st.session_state.api_id and st.session_state.api_hash):
